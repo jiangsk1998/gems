@@ -1,15 +1,14 @@
 use anchor_lang::prelude::*;
-use  anchor_lang::system_program::transfer;
 use  anchor_lang::system_program::Transfer;
 use anchor_spl::{
-    associated_token::{spl_associated_token_account::solana_program::native_token::LAMPORTS_PER_SOL, AssociatedToken},
+    associated_token::AssociatedToken,
     metadata::{self, Metadata},
     token::{self, Mint, Token, TokenAccount},
 };
 
 use crate::error::SkinsNftError;
 
-pub fn handler_mint_nft_public(ctx: Context<MintNftPublic>, name: String, symbol: String, uri: String) -> Result<()> {
+pub fn handler_mint_nft_whitelist(ctx: Context<MintNftWhitelist>, name: String, symbol: String, uri: String) -> Result<()> {
         // 1.检查总量限制
         let config = &mut ctx.accounts.config;
         require!(
@@ -23,8 +22,7 @@ pub fn handler_mint_nft_public(ctx: Context<MintNftPublic>, name: String, symbol
             SkinsNftError::MaxMintPerAddressReached
         );
 
-        ///3.处理支付逻辑
-
+        //3.处理支付逻辑
         anchor_lang::system_program::transfer(
             CpiContext::new(
                 ctx.accounts.system_program.to_account_info(),
@@ -41,16 +39,18 @@ pub fn handler_mint_nft_public(ctx: Context<MintNftPublic>, name: String, symbol
         ctx.accounts.user_mint_record.user = ctx.accounts.user.key();
         ctx.accounts.user_mint_record.last_mint_at = Clock::get()?.unix_timestamp;
 
+        ctx.accounts.whitelist_entry.remaining_mints.checked_sub(1).ok_or(SkinsNftError::MathOverflow)?;
         
         do_mint(ctx, name, symbol, uri);
 
+        
     
         Ok(())
 }
 
 /// 这个模块处理铸造 NFT 与交易给制定账户的逻辑
 pub fn do_mint(
-    ctx: Context<MintNftPublic>,
+    ctx: Context<MintNftWhitelist>,
     name: String,
     symbol: String,
     uri: String,
@@ -122,8 +122,6 @@ pub fn do_mint(
         Some(0), // max_supply: 0 表示无限量版
     )?;
 
-    ctx.accounts.whitelist_entry.remaining_mints.checked_sub(1).ok_or(SkinsNftError::MathOverflow)?;
-
     msg!(
         "NFT minted successfully with name: {}, symbol: {}, uri: {}",
         name,
@@ -135,7 +133,7 @@ pub fn do_mint(
 }
 
 #[derive(Accounts)]
-pub struct MintNftPublic<'info> {
+pub struct MintNftWhitelist<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 

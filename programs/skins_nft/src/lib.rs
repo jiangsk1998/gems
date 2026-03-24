@@ -11,6 +11,7 @@ declare_id!("EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK");
 
 #[program]
 pub mod skins_nft {
+
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>, args: InitializeParams) -> Result<()> {
@@ -36,6 +37,15 @@ pub mod skins_nft {
         symbol: String,
         uri: String,
     ) -> Result<()> {
-        instructions::mint_nft_public::handler(ctx, name, symbol, uri)
+        instructions::mint_nft_public::handler_mint_nft_public(ctx, name, symbol, uri)
+    }
+
+        pub fn mint_nft_whitelist(
+        ctx: Context<MintNftWhitelist>,
+        name: String,
+        symbol: String,
+        uri: String,
+    ) -> Result<()> {
+        instructions::mint_nft_whitelist::handler_mint_nft_whitelist(ctx, name, symbol, uri)
     }
 }
