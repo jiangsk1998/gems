@@ -40,12 +40,16 @@ pub mod skins_nft {
         instructions::mint_nft_public::handler_mint_nft_public(ctx, name, symbol, uri)
     }
 
-        pub fn mint_nft_whitelist(
+    pub fn mint_nft_whitelist(
         ctx: Context<MintNftWhitelist>,
         name: String,
         symbol: String,
         uri: String,
     ) -> Result<()> {
         instructions::mint_nft_whitelist::handler_mint_nft_whitelist(ctx, name, symbol, uri)
+    }
+
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+        instructions::withdraw::handler(ctx, amount)
     }
 }

@@ -10,9 +10,9 @@ pub struct Initialize<'info> {
 
     ///配置账户，初始化时创建
     #[account(
-        init,
+        init_if_needed,
         payer = authority,
-        space = Config::INIT_SPACE,
+        space = 8 + Config::INIT_SPACE,
         seeds = [b"config"],
         bump
     )]
@@ -39,6 +39,9 @@ pub fn handler(ctx: Context<Initialize>, args: InitializeParams) -> Result<()> {
     config.mint_paused = false;
     config.minted_count = 0;
     config.created_at = Clock::get()?.unix_timestamp;
-    msg!("Contract initialized successfully with authority: {}", config.authority);
+    msg!(
+        "Contract initialized successfully with authority: {}",
+        config.authority
+    );
     Ok(())
 }

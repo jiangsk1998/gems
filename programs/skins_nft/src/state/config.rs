@@ -33,7 +33,3 @@ pub struct Config {
     pub _reserved: [u8; 64],
 }
 
-impl Config {
-    // #[allow(clippy::arithmetic_side_effects)]
-    // pub const LEN: usize = 8 + 32 + 1 + 8 + 8 + 8 + 1 + 8 + 8 + 64;
-}

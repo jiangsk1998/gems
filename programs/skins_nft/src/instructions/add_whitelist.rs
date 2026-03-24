@@ -26,7 +26,7 @@ pub struct AddWhitelist<'info> {
     #[account(
         init,
         payer = authority,
-        space = WhitelistEntry::INIT_SPACE,
+        space = 8 + WhitelistEntry::INIT_SPACE,
         seeds = [b"whitelist_entry", user.key().as_ref()],
         bump
     )]

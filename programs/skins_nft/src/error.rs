@@ -27,4 +27,10 @@ pub enum SkinsNftError {
 
     #[msg("已达到最大供应量")]
     MaxSupplyReached,
+
+    #[msg("无效的提取金额")]
+    InvalidWithdrawAmount,
+
+    #[msg("余额不足以提取")]
+    InsufficientFunds,
 }

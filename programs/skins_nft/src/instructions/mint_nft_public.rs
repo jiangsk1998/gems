@@ -159,15 +159,16 @@ pub struct MintNftPublic<'info> {
         payer = user,
         seeds = [b"user_mint_record", user.key().as_ref()],
         bump,
-        space = crate::state::UserMintRecord::INIT_SPACE,
+        space = 8 + crate::state::UserMintRecord::INIT_SPACE,
     )]
     pub user_mint_record: Account<'info, crate::state::UserMintRecord>,
 
 
     ///CHECK:首款地址
-    #[account(mut,
-        address = config.authority @ SkinsNftError::InvalidTreasuryAddress,
-        
+    #[account(init_if_needed,
+        payer = user,
+        space = 0,
+        seeds = [b"treasury"], bump,
     )]
     pub treasury:UncheckedAccount<'info>,
 
