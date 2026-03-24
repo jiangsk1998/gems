@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{self, Metadata},
-    token::{self, spl_token, Mint, SetAuthority, Token, TokenAccount},
+    token::{self, Mint, Token, TokenAccount},
 };
 
 /// 这个模块处理铸造 NFT 与交易给制定账户的逻辑
