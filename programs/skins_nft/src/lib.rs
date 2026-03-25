@@ -22,14 +22,14 @@ pub mod skins_nft {
         instructions::add_whitelist::handler(ctx, args)
     }
 
-    pub fn mint_nft(
-        ctx: Context<MintNft>,
-        name: String,
-        symbol: String,
-        uri: String,
-    ) -> Result<()> {
-        instructions::mint_nft::handler(ctx, name, symbol, uri)
-    }
+    // pub fn mint_nft(
+    //     ctx: Context<MintNft>,
+    //     name: String,
+    //     symbol: String,
+    //     uri: String,
+    // ) -> Result<()> {
+    //     instructions::mint_nft::handler(ctx, name, symbol, uri)
+    // }
 
     pub fn mint_nft_public(
         ctx: Context<MintNftPublic>,
@@ -51,5 +51,13 @@ pub mod skins_nft {
 
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         instructions::withdraw::handler(ctx, amount)
+    }
+
+    pub fn freeze_nft(ctx: Context<FreezeNft>) -> Result<()> {
+        instructions::freeze_nft::handler(ctx)
+    }
+
+    pub fn thaw_nft(ctx: Context<ThawNft>) -> Result<()> {
+        instructions::thaw_nft::handler(ctx)
     }
 }

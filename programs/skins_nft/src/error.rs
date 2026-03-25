@@ -33,4 +33,7 @@ pub enum SkinsNftError {
 
     #[msg("余额不足以提取")]
     InsufficientFunds,
+
+    #[msg("无效的冻结权限账户")]
+    InvalidFreezeAuthority,
 }

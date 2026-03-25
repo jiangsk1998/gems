@@ -15,3 +15,9 @@ pub use mint_nft_whitelist::*;
 
 pub mod withdraw;
 pub use withdraw::*;
+
+pub mod freeze_nft;
+pub use freeze_nft::*;
+
+pub mod thaw_nft;
+pub use thaw_nft::*;
