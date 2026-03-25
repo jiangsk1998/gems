@@ -3,8 +3,9 @@ use anchor_lang::system_program::Transfer;
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{self, Metadata},
-    token::{self, Mint, Token, TokenAccount},
+    token::{self, spl_token::instruction::AuthorityType, Mint, SetAuthority, Token, TokenAccount},
 };
+use mpl_token_metadata::instructions::DelegateStandardV1CpiBuilder;
 
 use crate::error::SkinsNftError;
 
@@ -57,7 +58,7 @@ pub fn handler_mint_nft_whitelist(
         .checked_sub(1)
         .ok_or(SkinsNftError::MathOverflow)?;
 
-    do_mint(ctx, name, symbol, uri);
+    do_mint(ctx, name, symbol, uri)?;
 
     Ok(())
 }
@@ -110,7 +111,7 @@ pub fn do_mint(
             create_metadata_accounts_v3,
         ),
         data,
-        false, // is_mutable
+        true, // is_mutable
         true,
         None,
     )?;
@@ -133,8 +134,33 @@ pub fn do_mint(
             ctx.accounts.metadata_program.to_account_info(),
             create_master_edition_account,
         ),
-        Some(0), // max_supply: 0 表示无限量版
+        Some(1), // max_supply: 0 表示无限量版
     )?;
+
+    // token::set_authority(
+    //     CpiContext::new_with_signer(
+    //         ctx.accounts.token_program.to_account_info(),
+    //         SetAuthority {
+    //             current_authority: ctx.accounts.master_edition_account.to_account_info(),
+    //             account_or_mint: ctx.accounts.mint.to_account_info(),
+    //         },
+    //         &[&[b"metadata", ctx.accounts.metadata_program.key().as_ref(), ctx.accounts.mint.key().as_ref(),b"edition", &[ctx.bumps.master_edition_account]]],
+    //     ),
+    //     AuthorityType::FreezeAccount,
+    //     Option::Some(ctx.accounts.user.key()),
+    // )?;
+
+    // 使用 Metaplex 的 Builder 模式构建 Delegate 指令
+    DelegateStandardV1CpiBuilder::new(&ctx.accounts.metadata_program)
+        .delegate(&ctx.accounts.config.to_account_info()) // 你的合约 PDA
+        .metadata(&ctx.accounts.metadata_account)
+        .master_edition(Some(&ctx.accounts.master_edition_account))
+        .mint(&ctx.accounts.mint.to_account_info())
+        .token(&ctx.accounts.token_account.to_account_info())
+        .authority(&ctx.accounts.user) // 用户签名授权
+        .payer(&ctx.accounts.user)
+        .invoke()?;
+    
 
     msg!(
         "NFT minted successfully with name: {}, symbol: {}, uri: {}",
@@ -161,7 +187,7 @@ pub struct MintNftWhitelist<'info> {
         payer = user,
         mint::decimals = 0, //NFT 的小数位为0 
         mint::authority = user, //铸造后废除
-        mint::freeze_authority = user,
+        mint::freeze_authority = user,  //硬性规定 铸造时权限必须给用户
     )]
     pub mint: Account<'info, Mint>,
 

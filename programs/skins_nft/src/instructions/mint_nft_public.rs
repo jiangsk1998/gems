@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use  anchor_lang::system_program::Transfer;
+use anchor_lang::system_program::Transfer;
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{self, Metadata},
@@ -8,46 +8,53 @@ use anchor_spl::{
 
 use crate::error::SkinsNftError;
 
-pub fn handler_mint_nft_public(ctx: Context<MintNftPublic>, name: String, symbol: String, uri: String) -> Result<()> {
-        // 1.检查总量限制
-        let config = &mut ctx.accounts.config;
-        require!(
-            config.minted_count < config.max_supply,
-            SkinsNftError::MaxSupplyReached
-        );
+pub fn handler_mint_nft_public(
+    ctx: Context<MintNftPublic>,
+    name: String,
+    symbol: String,
+    uri: String,
+) -> Result<()> {
+    // 1.检查总量限制
+    let config = &mut ctx.accounts.config;
+    require!(
+        config.minted_count < config.max_supply,
+        SkinsNftError::MaxSupplyReached
+    );
 
-        // 2.检查用户铸造限制
-        require!(
-            ctx.accounts.user_mint_record.minted_count < config.max_mint_per_address,
-            SkinsNftError::MaxMintPerAddressReached
-        );
+    // 2.检查用户铸造限制
+    require!(
+        ctx.accounts.user_mint_record.minted_count < config.max_mint_per_address,
+        SkinsNftError::MaxMintPerAddressReached
+    );
 
-        //3.处理支付逻辑
-        anchor_lang::system_program::transfer(
-            CpiContext::new(
-                ctx.accounts.system_program.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.user.to_account_info(),
-                    to: ctx.accounts.treasury.to_account_info(),
-                },
-            ),
-            config.mint_price,
-        )?;
+    //3.处理支付逻辑
+    anchor_lang::system_program::transfer(
+        CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.user.to_account_info(),
+                to: ctx.accounts.treasury.to_account_info(),
+            },
+        ),
+        config.mint_price,
+    )?;
 
-        ctx.accounts.
+    ctx.accounts
+        .config
+        .minted_count
+        .checked_add(1)
+        .ok_or(SkinsNftError::MathOverflow)?;
+    ctx.accounts
+        .user_mint_record
+        .minted_count
+        .checked_add(1)
+        .ok_or(SkinsNftError::MathOverflow)?;
+    ctx.accounts.user_mint_record.user = ctx.accounts.user.key();
+    ctx.accounts.user_mint_record.last_mint_at = Clock::get()?.unix_timestamp;
 
-        config.minted_count.checked_add(1).ok_or(SkinsNftError::MathOverflow)?;
-        ctx.accounts.user_mint_record.minted_count.checked_add(1).ok_or(SkinsNftError::MathOverflow)?;
-        ctx.accounts.user_mint_record.user = ctx.accounts.user.key();
-        ctx.accounts.user_mint_record.last_mint_at = Clock::get()?.unix_timestamp;
+    do_mint(ctx, name, symbol, uri);
 
-        
-
-        
-        do_mint(ctx, name, symbol, uri);
-
-    
-        Ok(())
+    Ok(())
 }
 
 /// 这个模块处理铸造 NFT 与交易给制定账户的逻辑
@@ -145,8 +152,6 @@ pub struct MintNftPublic<'info> {
 )]
     pub config: Account<'info, crate::state::Config>,
 
-
-
     #[account(init,
         payer = user,
         mint::decimals = 0, //NFT 的小数位为0 
@@ -163,14 +168,13 @@ pub struct MintNftPublic<'info> {
     )]
     pub user_mint_record: Account<'info, crate::state::UserMintRecord>,
 
-
     ///CHECK:首款地址
     #[account(init_if_needed,
         payer = user,
         space = 0,
         seeds = [b"treasury"], bump,
     )]
-    pub treasury:UncheckedAccount<'info>,
+    pub treasury: UncheckedAccount<'info>,
 
     #[account(init_if_needed,
         payer = user,

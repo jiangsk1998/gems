@@ -6,16 +6,16 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-tangaga = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
 
 [programs.devnet]
-tangaga = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
 
 [programs.Testnet]
-tangaga = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
 
 [programs.mainnet]
-tangaga = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
 
 [test]
 startup_wait = 10000

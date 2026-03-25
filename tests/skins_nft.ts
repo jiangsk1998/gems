@@ -1,166 +1,252 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { SkinsNft } from "../target/types/skins_nft";
 import { MPL_TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata";
-import { lamports } from "@metaplex-foundation/umi";
-import { min } from "bn.js";
-
-
+import { SkinsNft } from "../target/types/skins_nft";
 
 describe("skins_nft", () => {
-  // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
+  const provider = anchor.AnchorProvider.env();
+  anchor.setProvider(provider);
 
   const program = anchor.workspace.skinsNft as Program<SkinsNft>;
+  const connection = provider.connection;
 
-  const mintKey = anchor.web3.Keypair.generate();
+  // ---- 常量（从 anchor 导出，避免手写错误）----
+  const TOKEN_PROGRAM_ID = anchor.utils.token.TOKEN_PROGRAM_ID;
+  const ASSOCIATED_TOKEN_PROGRAM_ID = anchor.utils.token.ASSOCIATED_PROGRAM_ID;
+  const metadataProgramId = new anchor.web3.PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
 
-  // it("Is initialized!", async () => {
-  //   // Add your test here.
-  //   const tx = await program.methods.mintNft("Test NFT", "TNFT", "https://example.com").accounts(
-  //     {
-  //       user: anchor.getProvider().wallet.publicKey,
-  //       mint: mintKey.publicKey, // 使用生成的 mint 密钥对
-  //       metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID, // Metaplex Metadata Program ID
-  //     }
-  //   ).signers([mintKey]).rpc();
-  //   console.log("Your transaction signature", tx);
-
-  //   console.log("Minted NFT with transaction signature:", program.provider.connection.getTransaction(tx));
-  // });
-
-
-
-  //合约管理员
-  let manager = anchor.web3.Keypair.generate();
-
-
-
-
-  ///1. 初始化合约
-  it("Is initialized!", async () => {
-
-    const sig1 = await anchor.getProvider().connection.requestAirdrop(manager.publicKey, anchor.web3.LAMPORTS_PER_SOL * 500)
-
-    await anchor.getProvider().connection.confirmTransaction(sig1);
-
-
-    const sig2 = await anchor.getProvider().connection.requestAirdrop(minter.publicKey, anchor.web3.LAMPORTS_PER_SOL * 500)
-
-    await anchor.getProvider().connection.confirmTransaction(sig2);
-
-
-
-    let initialParam =
-    {
-      whitelistEnabled: true,
-      mintPrice: new anchor.BN(100000000000),
-      maxSupply: new anchor.BN(1000),
-      maxMintPerAddress: new anchor.BN(1),
-    }
-
-    const configPDA = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("config")],
-      program.programId
-    )[0]
-
-    // Add your test here.
-    const tx = await program.methods.initialize(initialParam).accountsPartial(
-      {
-        authority: manager.publicKey,
-        // config:configPDA, 
-        systemProgram: anchor.web3.SystemProgram.programId,
-      }
-    ).signers([manager]).rpc();
-    console.log("Your transaction signature", tx);
-  });
-
-
-  ///2. 添加白名单地址
+  // ---- 账户 ----
+  const mintKey = anchor.web3.Keypair.generate(); // 白名单铸造的NFT
+  const manager = anchor.web3.Keypair.generate();
   const minter = anchor.web3.Keypair.generate();
 
-  it("添加白名单地址", async () => {
+  // ---- 预计算所有 PDA（所有测试共享）----
+  const [configPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("config")], program.programId
+  );
+  const [treasuryPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("treasury")], program.programId
+  );
+  const [minterMintRecord] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("user_mint_record"), minter.publicKey.toBuffer()], program.programId
+  );
+  const [minterWhitelistEntry] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("whitelist_entry"), minter.publicKey.toBuffer()], program.programId
+  );
+  // minter 持有 mintKey NFT 的 ATA
+  const minterAta = anchor.web3.PublicKey.findProgramAddressSync(
+    [minter.publicKey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintKey.publicKey.toBuffer()],
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  )[0];
+  // mintKey 对应的 Metaplex PDA
+  const [metadataAccountPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("metadata"), metadataProgramId.toBuffer(), mintKey.publicKey.toBuffer()],
+    metadataProgramId
+  );
+  const [masterEditionPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("metadata"), metadataProgramId.toBuffer(), mintKey.publicKey.toBuffer(), Buffer.from("edition")],
+    metadataProgramId
+  );
 
-    let initialParam =
-    {
-      whitelistEnabled: true,
-      mintPrice: new anchor.BN(100000000000),
+  // 辅助：确认交易
+  async function confirm(sig: string) {
+    const bh = await connection.getLatestBlockhash();
+    await connection.confirmTransaction({ signature: sig, ...bh }, "confirmed");
+  }
+
+  // ===== 1. 初始化合约（whitelistEnabled: false 先走公共铸造）=====
+  it("初始化合约", async () => {
+    const sig1 = await connection.requestAirdrop(manager.publicKey, anchor.web3.LAMPORTS_PER_SOL * 100);
+    await confirm(sig1);
+    const sig2 = await connection.requestAirdrop(minter.publicKey, anchor.web3.LAMPORTS_PER_SOL * 100);
+    await confirm(sig2);
+
+    const tx = await program.methods.initialize({
+      whitelistEnabled: false,           // 关白名单，先测公共铸造
+      mintPrice: new anchor.BN(anchor.web3.LAMPORTS_PER_SOL),
       maxSupply: new anchor.BN(1000),
-      maxMintPerAddress: new anchor.BN(1),
-    }
-
-    // Add your test here.
-    const tx = await program.methods.addWhitelist({ mintAmount: new anchor.BN(1) }).accountsPartial(
-      {
-        authority: manager.publicKey,
-        user: minter.publicKey,
-      }
-    ).signers([manager]).rpc();
-    console.log("Your transaction signature", tx);
+      maxMintPerAddress: new anchor.BN(10),
+    }).accountsPartial({
+      authority: manager.publicKey,
+      config: configPDA,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    }).signers([manager]).rpc();
+    console.log("初始化合约:", tx);
   });
 
-  ///3. 白名单地址铸造NFT
-
-
-  it("白名单地址铸造NFT", async () => {
-
-
-    // Add your test here.
-    const tx = await program.methods.mintNftWhitelist("Test NFT", "TNFT", "https://example.com").accountsPartial(
-      {
-        user: minter.publicKey,
-        mint: mintKey.publicKey, // 使用生成的 mint 密钥对
-        metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID, // Metaplex Metadata Program ID
-        // whitelistEntry:anchor.web3.PublicKey.findProgramAddressSync(
-        //   [Buffer.from("whitelist_entry"), minter.publicKey.toBuffer()],
-        //   program.programId
-        // )[0],
-        // whitelistEntry: anchor.web3.Keypair.generate().publicKey, // 使用生成的白名单地址
-      }
-    ).signers([minter, mintKey]).rpc();
-    console.log("Your transaction signature", tx);
-  });
-
-  ///4. 公共铸造NFT
-
+  // ===== 2. 公共铸造NFT =====
   it("公共铸造NFT", async () => {
-
     const mintKey2 = anchor.web3.Keypair.generate();
+    const [providerMintRecord] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("user_mint_record"), provider.wallet.publicKey.toBuffer()], program.programId
+    );
+    const providerAta = anchor.web3.PublicKey.findProgramAddressSync(
+      [provider.wallet.publicKey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintKey2.publicKey.toBuffer()],
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )[0];
+    const [metadata2] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("metadata"), metadataProgramId.toBuffer(), mintKey2.publicKey.toBuffer()],
+      metadataProgramId
+    );
+    const [masterEdition2] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("metadata"), metadataProgramId.toBuffer(), mintKey2.publicKey.toBuffer(), Buffer.from("edition")],
+      metadataProgramId
+    );
 
-    // Add your test here.
-    const tx = await program.methods.mintNftPublic("Test NFT", "TNFT", "https://example.com").accountsPartial(
-      {
-        user: anchor.getProvider().wallet.publicKey,
-        mint: mintKey2.publicKey, // 使用生成的 mint 密钥对
-        metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID, // Metaplex Metadata Program ID
-      }
-    ).signers([mintKey2]).rpc();
-    console.log("Your transaction signature", tx);
+    // 显式传所有账户，避免 accountsPartial 自动解析失败
+    const tx = await program.methods.mintNftPublic("Test NFT", "TNFT", "https://example.com")
+      .accountsPartial({
+        user: provider.wallet.publicKey,
+        config: configPDA,
+        mint: mintKey2.publicKey,
+        userMintRecord: providerMintRecord,
+        treasury: treasuryPDA,
+        tokenAccount: providerAta,
+        metadataAccount: metadata2,
+        masterEditionAccount: masterEdition2,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        metadataProgram: metadataProgramId,
+      }).signers([mintKey2]).rpc();
+    console.log("公共铸造NFT:", tx);
   });
 
-  ///5. 提现
+  // ===== 3. 重新初始化：开启白名单 =====
+  it("重新初始化开启白名单", async () => {
+    const tx = await program.methods.initialize({
+      whitelistEnabled: true,
+      mintPrice: new anchor.BN(anchor.web3.LAMPORTS_PER_SOL),
+      maxSupply: new anchor.BN(1000),
+      maxMintPerAddress: new anchor.BN(10),
+    }).accountsPartial({
+      authority: manager.publicKey,
+      config: configPDA,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    }).signers([manager]).rpc();
+    console.log("重新初始化开启白名单:", tx);
+  });
 
-  it("提现", async () => {
-
-    // Add your test here.
-    const tx = await program.methods.withdraw(new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * 2)).accountsPartial(
-      {
-        treasury: anchor.web3.PublicKey.findProgramAddressSync(
-          [Buffer.from("treasury")],
-          program.programId
-        )[0],
-        config: anchor.web3.PublicKey.findProgramAddressSync(
-          [Buffer.from("config")],
-          program.programId
-        )[0],
+  // ===== 4. 添加白名单地址 =====
+  it("添加白名单地址", async () => {
+    const tx = await program.methods.addWhitelist({ mintAmount: new anchor.BN(5) })
+      .accountsPartial({
         authority: manager.publicKey,
-        recipient: anchor.web3.Keypair.generate().publicKey, // 使用生成的 treasury 地址
-      }
-    ).signers([manager]).rpc();
-    console.log("Your transaction signature", tx);
+        config: configPDA,
+        user: minter.publicKey,
+        whitelistEntry: minterWhitelistEntry,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      }).signers([manager]).rpc();
+    console.log("添加白名单地址:", tx);
   });
 
+  // ===== 5. 白名单铸造NFT（mintKey，后续测试都用这个）=====
+  it("白名单铸造NFT", async () => {
+    // 显式传所有账户，避免 accountsPartial 自动解析失败
+    const tx = await program.methods.mintNftWhitelist("Test NFT", "TNFT", "https://example.com")
+      .accountsPartial({
+        user: minter.publicKey,
+        config: configPDA,
+        mint: mintKey.publicKey,
+        userMintRecord: minterMintRecord,
+        whitelistEntry: minterWhitelistEntry,
+        treasury: treasuryPDA,
+        tokenAccount: minterAta,
+        metadataAccount: metadataAccountPDA,
+        masterEditionAccount: masterEditionPDA,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        metadataProgram: metadataProgramId,
+      }).signers([minter, mintKey]).rpc();
+    console.log("白名单铸造NFT:", tx);
+    console.log("minterAta:", minterAta.toBase58());
+  });
 
+  // ===== 6. 提现 =====
+  it("提现", async () => {
+    // treasury 此时有 2 SOL（公共铸造 1 SOL + 白名单铸造 1 SOL）
+    const tx = await program.methods.withdraw(new anchor.BN(anchor.web3.LAMPORTS_PER_SOL))
+      .accountsPartial({
+        config: configPDA,
+        authority: manager.publicKey,
+        treasury: treasuryPDA,
+        recipient: manager.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      }).signers([manager]).rpc();
+    console.log("提现:", tx);
+  });
+
+  // ===== 7. 冻结NFT =====
+  it("冻结NFT", async () => {
+    const tx = await program.methods.freezeNft()
+      .accountsPartial({
+        freezeAuthority: minter.publicKey,
+        mint: mintKey.publicKey,
+        tokenAccount: minterAta,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      }).signers([minter]).rpc();
+    console.log("冻结NFT:", tx);
+  });
+
+  // ===== 8. 解冻NFT =====
+  it("解冻NFT", async () => {
+    const tx = await program.methods.thawNft()
+      .accountsPartial({
+        freezeAuthority: minter.publicKey,
+        mint: mintKey.publicKey,
+        tokenAccount: minterAta,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      }).signers([minter]).rpc();
+    console.log("解冻NFT:", tx);
+  });
+
+  // ===== 9. 转移 Metadata 更新权限（minter → manager）=====
+  it("转移更新权限给manager", async () => {
+    console.log("metadataAccount:", metadataAccountPDA.toBase58());
+    const tx = await program.methods.transUpdateAuth()
+      .accountsPartial({
+        currentAuthrity: minter.publicKey,
+        metadataAccount: metadataAccountPDA,
+        newAuth: manager.publicKey,
+        metadataProgram: metadataProgramId,
+      }).signers([minter]).rpc();
+    console.log("转移更新权限:", tx);
+  });
+
+  // ===== 10. 撤销冻结权限 =====
+  it("撤销冻结权限", async () => {
+    const tx = await program.methods.revokeFreezeAuth()
+      .accountsPartial({
+        currentAuth: minter.publicKey,
+        mint: mintKey.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      }).signers([minter]).rpc();
+    console.log("撤销冻结权限:", tx);
+  });
+
+  // ===== 11. 转账NFT =====
+  it("转账NFT给接收方", async () => {
+    const receiver = anchor.web3.Keypair.generate();
+    const receiverAta = anchor.web3.PublicKey.findProgramAddressSync(
+      [receiver.publicKey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintKey.publicKey.toBuffer()],
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    )[0];
+
+    const tx = await program.methods.transNft()
+      .accountsPartial({
+        owner: minter.publicKey,
+        mint: mintKey.publicKey,
+        fromAta: minterAta,
+        reviver: receiver.publicKey,
+        toAta: receiverAta,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      }).signers([minter]).rpc();
+    console.log("转账NFT:", tx);
+    console.log("NFT已转到:", receiver.publicKey.toBase58());
+  });
 });
-
-

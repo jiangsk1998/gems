@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use crate::error::SkinsNftError;
 use crate::state::Config;
 
 #[derive(Accounts)]
@@ -14,7 +15,11 @@ pub struct Initialize<'info> {
         payer = authority,
         space = 8 + Config::INIT_SPACE,
         seeds = [b"config"],
-        bump
+        bump,
+        // 首次初始化：config.authority 为零地址（新账户数据全0），允许任意人创建
+        // 重新初始化：必须是当前 authority 才能修改
+        constraint = config.authority == authority.key() || config.authority == Pubkey::default()
+            @ SkinsNftError::Unauthorized
     )]
     pub config: Account<'info, Config>,
 
