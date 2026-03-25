@@ -60,4 +60,12 @@ pub mod skins_nft {
     pub fn thaw_nft(ctx: Context<ThawNft>) -> Result<()> {
         instructions::thaw_nft::handler(ctx)
     }
+
+    pub fn trans_update_auth(ctx: Context<TransUpdateAuth>) -> Result<()> {
+        instructions::trans_update_auth::trans_update_auth(ctx)
+    }
+
+    pub fn revoke_freeze_auth(ctx: Context<RevokeFreezeAuth>) -> Result<()> {
+        instructions::revoke_freeze_auth::revoke_freeze_auth(ctx)
+    }
 }

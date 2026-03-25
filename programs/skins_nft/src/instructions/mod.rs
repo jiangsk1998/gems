@@ -21,3 +21,10 @@ pub use freeze_nft::*;
 
 pub mod thaw_nft;
 pub use thaw_nft::*;
+
+pub mod trans_update_auth;
+pub use trans_update_auth::*;
+
+
+pub mod revoke_freeze_auth;
+pub use revoke_freeze_auth::*;
