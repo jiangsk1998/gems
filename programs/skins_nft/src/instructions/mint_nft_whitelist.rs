@@ -116,51 +116,85 @@ pub fn do_mint(
         None,
     )?;
 
-    // 3. 调用 Metaplex Token Metadata 程序创建 Master Edition 账户
-    let create_master_edition_account = metadata::CreateMasterEditionV3 {
-        edition: ctx.accounts.master_edition_account.to_account_info(),
-        mint: ctx.accounts.mint.to_account_info(),
-        update_authority: ctx.accounts.user.to_account_info(),
-        mint_authority: ctx.accounts.user.to_account_info(),
-        payer: ctx.accounts.user.to_account_info(),
-        metadata: ctx.accounts.metadata_account.to_account_info(),
-        token_program: ctx.accounts.token_program.to_account_info(),
-        system_program: ctx.accounts.system_program.to_account_info(),
-        rent: ctx.accounts.rent.to_account_info(),
-    };
+    // // 3. 调用 Metaplex Token Metadata 程序创建 Master Edition 账户
+    // let create_master_edition_account = metadata::CreateMasterEditionV3 {
+    //     edition: ctx.accounts.master_edition_account.to_account_info(),
+    //     mint: ctx.accounts.mint.to_account_info(),
+    //     update_authority: ctx.accounts.user.to_account_info(),
+    //     mint_authority: ctx.accounts.user.to_account_info(),
+    //     payer: ctx.accounts.user.to_account_info(),
+    //     metadata: ctx.accounts.metadata_account.to_account_info(),
+    //     token_program: ctx.accounts.token_program.to_account_info(),
+    //     system_program: ctx.accounts.system_program.to_account_info(),
+    //     rent: ctx.accounts.rent.to_account_info(),
+    // };
 
-    metadata::create_master_edition_v3(
-        CpiContext::new(
-            ctx.accounts.metadata_program.to_account_info(),
-            create_master_edition_account,
-        ),
-        Some(1), // max_supply: 0 表示无限量版
-    )?;
-
-    // token::set_authority(
-    //     CpiContext::new_with_signer(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         SetAuthority {
-    //             current_authority: ctx.accounts.master_edition_account.to_account_info(),
-    //             account_or_mint: ctx.accounts.mint.to_account_info(),
-    //         },
-    //         &[&[b"metadata", ctx.accounts.metadata_program.key().as_ref(), ctx.accounts.mint.key().as_ref(),b"edition", &[ctx.bumps.master_edition_account]]],
+    // metadata::create_master_edition_v3(
+    //     CpiContext::new(
+    //         ctx.accounts.metadata_program.to_account_info(),
+    //         create_master_edition_account,
     //     ),
-    //     AuthorityType::FreezeAccount,
-    //     Option::Some(ctx.accounts.user.key()),
+    //     Some(1), // max_supply: 0 表示无限量版
     // )?;
 
+    token::set_authority(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            SetAuthority {
+                current_authority: ctx.accounts.user.to_account_info(),
+                account_or_mint: ctx.accounts.mint.to_account_info(),
+            },
+        ),
+        AuthorityType::FreezeAccount,
+        Option::Some(ctx.accounts.config.key()),
+    )?;
+
+        token::set_authority(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            SetAuthority {
+                current_authority: ctx.accounts.user.to_account_info(),
+                account_or_mint: ctx.accounts.mint.to_account_info(),
+            },
+        ),
+        AuthorityType::MintTokens,
+        None,
+    )?;
+
     // 使用 Metaplex 的 Builder 模式构建 Delegate 指令
-    DelegateStandardV1CpiBuilder::new(&ctx.accounts.metadata_program)
-        .delegate(&ctx.accounts.config.to_account_info()) // 你的合约 PDA
-        .metadata(&ctx.accounts.metadata_account)
-        .master_edition(Some(&ctx.accounts.master_edition_account))
-        .mint(&ctx.accounts.mint.to_account_info())
-        .token(&ctx.accounts.token_account.to_account_info())
-        .authority(&ctx.accounts.user) // 用户签名授权
-        .payer(&ctx.accounts.user)
-        .invoke()?;
-    
+    // DelegateStandardV1CpiBuilder::new(&ctx.accounts.metadata_program)
+    //     .delegate(&ctx.accounts.config.to_account_info()) // 你的合约 PDA
+    //     .metadata(&ctx.accounts.metadata_account)
+    //     // .master_edition(Some(&ctx.accounts.master_edition_account))
+    //     .mint(&ctx.accounts.mint.to_account_info())
+    //     .token(&ctx.accounts.token_account.to_account_info())
+    //     .authority(&ctx.accounts.user) // 用户签名授权
+    //     .payer(&ctx.accounts.user)
+    //     .system_program(&ctx.accounts.system_program)
+    //     .sysvar_instructions(&ctx.accounts.rent.to_account_info())
+    //     .spl_token_program(Some(&ctx.accounts.token_program.to_account_info()))
+    //     .invoke()?;
+
+    // // 3. 调用 Metaplex Token Metadata 程序创建 Master Edition 账户
+    // let create_master_edition_account = metadata::CreateMasterEditionV3 {
+    //     edition: ctx.accounts.master_edition_account.to_account_info(),
+    //     mint: ctx.accounts.mint.to_account_info(),
+    //     update_authority: ctx.accounts.user.to_account_info(),
+    //     mint_authority: ctx.accounts.user.to_account_info(),
+    //     payer: ctx.accounts.user.to_account_info(),
+    //     metadata: ctx.accounts.metadata_account.to_account_info(),
+    //     token_program: ctx.accounts.token_program.to_account_info(),
+    //     system_program: ctx.accounts.system_program.to_account_info(),
+    //     rent: ctx.accounts.rent.to_account_info(),
+    // };
+
+    // metadata::create_master_edition_v3(
+    //     CpiContext::new(
+    //         ctx.accounts.metadata_program.to_account_info(),
+    //         create_master_edition_account,
+    //     ),
+    //     Some(1), // max_supply: 0 表示无限量版
+    // )?;count.to_account_info())
 
     msg!(
         "NFT minted successfully with name: {}, symbol: {}, uri: {}",
@@ -178,12 +212,13 @@ pub struct MintNftWhitelist<'info> {
     pub user: Signer<'info>,
 
     #[account(mut, seeds = [b"config"], bump,
-    constraint = config.mint_paused == false @ SkinsNftError::MintingPaused,
-    constraint = config.whitelist_enabled == true @ SkinsNftError::WhitelistEnabled,
+    constraint = !config.mint_paused @ SkinsNftError::MintingPaused,
+    constraint = config.whitelist_enabled @ SkinsNftError::WhitelistEnabled,
 )]
     pub config: Account<'info, crate::state::Config>,
 
-    #[account(init,
+    #[account(
+        init,
         payer = user,
         mint::decimals = 0, //NFT 的小数位为0 
         mint::authority = user, //铸造后废除
@@ -231,13 +266,12 @@ pub struct MintNftWhitelist<'info> {
 
     /// Master Edition Account (PDA)
     /// CHECK: Metaplex 程序会初始化这个账户
-    #[account(mut,
-        seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref(),b"edition"],
-        bump,
-        seeds::program = metadata_program.key()
-    )]
-    pub master_edition_account: UncheckedAccount<'info>,
-
+    // #[account(mut,
+    //     seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref(),b"edition"],
+    //     bump,
+    //     seeds::program = metadata_program.key()
+    // )]
+    // pub master_edition_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 
     pub rent: Sysvar<'info, Rent>,

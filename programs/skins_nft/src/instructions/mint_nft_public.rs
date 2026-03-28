@@ -128,7 +128,7 @@ pub fn do_mint(
             ctx.accounts.metadata_program.to_account_info(),
             create_master_edition_account,
         ),
-        Some(0), // max_supply: 0 表示无限量版
+        Some(1), // max_supply: 0 表示无限量版
     )?;
 
     msg!(
@@ -148,7 +148,7 @@ pub struct MintNftPublic<'info> {
 
     #[account(mut, seeds = [b"config"], bump,
     constraint = config.mint_paused == false @ SkinsNftError::MintingPaused,
-    constraint = config.whitelist_enabled == true @ SkinsNftError::WhitelistEnabled,
+    constraint = config.whitelist_enabled == false @ SkinsNftError::WhitelistEnabled,
 )]
     pub config: Account<'info, crate::state::Config>,
 
