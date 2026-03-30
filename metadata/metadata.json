@@ -1,0 +1,16 @@
+{
+  "name": "My NFT Collection",
+  "symbol": "MNFT",
+  "description": "Day27 学习项目 — NFT 铸造小站",
+  "image": "https://arweave.net/your-collection-image",
+  "external_url": "https://your-site.com",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/your-collection-image",
+        "type": "image/png"
+      }
+    ],
+    "category": "image"
+  }
+}

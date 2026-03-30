@@ -40,11 +40,11 @@ pub fn handler_mint_nft_whitelist(
         config.mint_price,
     )?;
 
-    config
+    config.minted_count = config
         .minted_count
         .checked_add(1)
         .ok_or(SkinsNftError::MathOverflow)?;
-    ctx.accounts
+    ctx.accounts.user_mint_record.minted_count = ctx.accounts
         .user_mint_record
         .minted_count
         .checked_add(1)
@@ -52,7 +52,7 @@ pub fn handler_mint_nft_whitelist(
     ctx.accounts.user_mint_record.user = ctx.accounts.user.key();
     ctx.accounts.user_mint_record.last_mint_at = Clock::get()?.unix_timestamp;
 
-    ctx.accounts
+    ctx.accounts.whitelist_entry.remaining_mints = ctx.accounts
         .whitelist_entry
         .remaining_mints
         .checked_sub(1)
@@ -260,7 +260,8 @@ pub struct MintNftWhitelist<'info> {
     #[account(mut,
         seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()],
         bump,
-        seeds::program = metadata_program.key()
+        seeds::program = metadata_program.key(),
+        constraint = metadata_program.key() == mpl_token_metadata::ID,
     )]
     pub metadata_account: UncheckedAccount<'info>,
 

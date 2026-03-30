@@ -39,12 +39,12 @@ pub fn handler_mint_nft_public(
         config.mint_price,
     )?;
 
-    ctx.accounts
+    ctx.accounts.config.minted_count = ctx.accounts
         .config
         .minted_count
         .checked_add(1)
         .ok_or(SkinsNftError::MathOverflow)?;
-    ctx.accounts
+    ctx.accounts.user_mint_record.minted_count = ctx.accounts
         .user_mint_record
         .minted_count
         .checked_add(1)

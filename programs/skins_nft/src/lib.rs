@@ -7,7 +7,7 @@ use instructions::*;
 pub mod state;
 pub use state::*;
 
-declare_id!("EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK");
+declare_id!("BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy");
 
 #[program]
 pub mod skins_nft {

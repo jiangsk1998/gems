@@ -1,0 +1,26 @@
+{
+  "name": "My NFT #0",
+  "symbol": "MNFT",
+  "description": "NFT 铸造小站的第 0 号作品",
+  "image": "https://arweave.net/your-nft-0-image",
+  "attributes": [
+    { "trait_type": "背景", "value": "星空" },
+    { "trait_type": "稀有度", "value": "普通" },
+    { "trait_type": "编号", "value": 0 }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/your-nft-0-image",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "你的钱包地址",
+        "share": 100
+      }
+    ]
+  }
+}

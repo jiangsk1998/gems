@@ -6,16 +6,16 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 
 [programs.devnet]
-skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 
 [programs.Testnet]
-skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 
 [programs.mainnet]
-skins_nft = "EzP1jXJgQXzxGuosuWnf2vmGGcE8MCW3HfuKLhNxRFuK"
+skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 
 [test]
 startup_wait = 10000
