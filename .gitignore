@@ -128,7 +128,7 @@ nbproject/
 .anchor/test-ledger/test-ledger-log.txt
 
 Cargo.lock
-test-ledger 
+test-ledger/
 
 yarn.lock
 
