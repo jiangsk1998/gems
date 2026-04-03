@@ -40,4 +40,7 @@ pub enum DexError {
 
     #[msg("无效的铸币账户")]
     InvalidMint,
+
+    #[msg("滑点超过预设的最大值，交易被拒绝")]
+    SlippageExceeded,
 }
