@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
+use anchor_spl::{associated_token::AssociatedToken, token_2022::{self, Token2022}, token_interface::{Mint, TokenAccount}};
 
 use crate::{Config, ClaimRecord, FaucetError, CONFIG_SEED, CLAIM_RECORD_SEED};
 
@@ -14,10 +14,10 @@ pub fn handler(ctx: Context<ClaimTokens>) -> Result<()> {
     }
 
     // 转账逻辑
-    token::transfer(
+    token_2022::transfer(
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
-            token::Transfer {
+            token_2022::Transfer {
                 from: ctx.accounts.vault.to_account_info(),
                 to: ctx.accounts.user_token_account.to_account_info(),
                 authority: config.to_account_info(),
@@ -52,7 +52,7 @@ pub struct ClaimTokens<'info> {
     pub config: Box<Account<'info, Config>>,
 
 
-    pub mint: Account<'info, Mint>,
+    pub mint: InterfaceAccount<'info, Mint>,
     
     
     #[account(
@@ -65,7 +65,7 @@ pub struct ClaimTokens<'info> {
         token::mint = config.mint,
         token::authority = config
     )]
-    pub vault: Account<'info, TokenAccount>,
+    pub vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         init_if_needed, 
@@ -73,14 +73,14 @@ pub struct ClaimTokens<'info> {
         associated_token::mint = mint,
         associated_token::authority = user
     )]
-    pub user_token_account: Account<'info, TokenAccount>,
+    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(mut)]
     pub user: Signer<'info>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
 
-    pub token_program: Program<'info, Token>,
+    pub token_program: Program<'info, Token2022>,
     pub system_program: Program<'info, System>,
     
 }        

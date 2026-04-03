@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount};
-
+use anchor_spl::{token_2022::{self, Token2022}, token_interface::TokenAccount};
 use crate::{Config, FaucetError, CONFIG_SEED};
 
 pub fn handler(ctx: Context<DepositsTokens>, amount: u64) -> Result<()> {
@@ -8,10 +7,10 @@ pub fn handler(ctx: Context<DepositsTokens>, amount: u64) -> Result<()> {
     let config = &ctx.accounts.config;
     // 转账逻辑
 
-    token::transfer(
+    token_2022::transfer(
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
-            token::Transfer {
+            token_2022::Transfer {
                 from: ctx.accounts.admin_token_account.to_account_info(),
                 to: ctx.accounts.vault.to_account_info(),
                 authority: ctx.accounts.admin.to_account_info(),
@@ -37,18 +36,18 @@ pub struct DepositsTokens<'info> {
     pub config: Box<Account<'info, Config>>,
 
     #[account(mut)]
-    pub vault: Account<'info, TokenAccount>,
+    pub vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(mut,
         token::mint = config.mint,
         token::authority = admin,
     )]
-    pub admin_token_account: Account<'info, TokenAccount>,
+    pub admin_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account()]
     pub admin: Signer<'info>,
 
-    pub token_program: Program<'info, Token>,
+    pub token_program: Program<'info, Token2022>,
     
     pub system_program: Program<'info, System>,
 }
