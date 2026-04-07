@@ -19,7 +19,7 @@ pub struct RemoveLiquidity<'info> {
     has_one = vault_b,
     has_one = lp_mint,
     )]
-    pub pool: Account<'info, Pool>,
+    pub pool: Box<Account<'info, Pool>>,
 
     #[account(mut)]
     pub vault_a: InterfaceAccount<'info, TokenAccount>,
@@ -32,22 +32,22 @@ pub struct RemoveLiquidity<'info> {
 
     #[account(mut,
         token::mint = pool.token_mint_a,
-    token::authority = user,
+        token::authority = user,
     )]
-    pub user_token_a: InterfaceAccount<'info, TokenAccount>,
+    pub user_token_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut,
         token::mint = pool.token_mint_b,
     token::authority = user,
     )]
-    pub user_token_b: InterfaceAccount<'info, TokenAccount>,
+    pub user_token_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
         token::mint = lp_mint,
         token::authority = user,
     )]
-    pub user_lp_token: InterfaceAccount<'info, TokenAccount>,
+    pub user_lp_token: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub token_program_a: Interface<'info, TokenInterface>,
     pub token_program_b: Interface<'info, TokenInterface>,

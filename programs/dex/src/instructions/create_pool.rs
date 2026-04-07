@@ -18,7 +18,7 @@ pub struct CreatePool<'info> {
         mint::authority = pool,
         mint::token_program = token_program_2022,
     )]
-    pub lp_mint: InterfaceAccount<'info, Mint>,
+    pub lp_mint: Box<InterfaceAccount<'info, Mint>>,
 
     pub token_a_mint: InterfaceAccount<'info, Mint>,
 
@@ -31,7 +31,7 @@ pub struct CreatePool<'info> {
         associated_token::authority = pool,
         associated_token::token_program = token_program_a,
     )]
-    pub vault_a: InterfaceAccount<'info, TokenAccount>,
+    pub vault_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -40,7 +40,7 @@ pub struct CreatePool<'info> {
         associated_token::authority = pool,
      associated_token::token_program = token_program_b,
     )]
-    pub vault_b: InterfaceAccount<'info, TokenAccount>,
+    pub vault_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -49,7 +49,7 @@ pub struct CreatePool<'info> {
         seeds = [POOL_SEED, token_a_mint.key().as_ref(), token_b_mint.key().as_ref()],
         bump
     )]
-    pub pool: Account<'info, Pool>,
+    pub pool: Box<Account<'info, Pool>>,
 
     pub token_program_a: Interface<'info, TokenInterface>,
     pub token_program_b: Interface<'info, TokenInterface>,

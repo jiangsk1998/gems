@@ -8,3 +8,5 @@ pub use create_pool::*;
 pub use add_liquidity::*;
 
 pub use swap::*;
+
+pub use remove_liquidity::*;

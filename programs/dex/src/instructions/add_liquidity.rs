@@ -173,7 +173,7 @@ pub struct AddLiquidity<'info> {
         token::authority = user,
         token::token_program = token_program_a,
     )]
-    pub user_token_a: InterfaceAccount<'info, TokenAccount>,
+    pub user_token_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     ///用户的代币A账户
     #[account(
@@ -182,7 +182,7 @@ pub struct AddLiquidity<'info> {
         token::authority = user,
         token::token_program = token_program_b,
     )]
-    pub user_token_b: InterfaceAccount<'info, TokenAccount>,
+    pub user_token_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     ///用户的LP Token账户，如果没有就创建
     #[account(

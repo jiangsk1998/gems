@@ -34,4 +34,13 @@ pub mod dex {
     ) -> Result<()> {
         swap::handler(ctx, amount_in, min_amount_out, a_to_b)
     }
+
+    pub fn remove_liquidity(
+        ctx: Context<RemoveLiquidity>,
+        lp_amount: u64,
+        min_a: u64,
+        min_b: u64,
+    ) -> Result<()> {
+        remove_liquidity::handler(ctx, lp_amount, min_a, min_b)
+    }
 }
