@@ -2,9 +2,9 @@ use crate::constant::POOL_SEED;
 use crate::error::DexError;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
-use anchor_spl::token_2022;
 use anchor_spl::token_2022::Token2022;
-use anchor_spl::token_interface::TokenAccount;
+use anchor_spl::token_interface::{TokenAccount, TokenInterface};
+use anchor_spl::{token_2022, token_interface};
 
 pub fn handler(
     ctx: Context<Swap>,
@@ -70,9 +70,14 @@ pub fn handler(
     );
 
     //4.执行交换
-    token_2022::transfer(
+    token_interface::transfer(
         CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
+            // ctx.accounts.token_program.to_account_info(),
+            if a_to_b {
+                ctx.accounts.token_program_a.to_account_info()
+            } else {
+                ctx.accounts.token_program_b.to_account_info()
+            },
             token_2022::Transfer {
                 from: ctx.accounts.user_input.to_account_info(),
                 to: input_vault.to_account_info(),
@@ -82,9 +87,13 @@ pub fn handler(
         amount_in,
     )?;
 
-    token_2022::transfer(
+    token_interface::transfer(
         CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
+            if a_to_b {
+                ctx.accounts.token_program_a.to_account_info()
+            } else {
+                ctx.accounts.token_program_b.to_account_info()
+            },
             token_2022::Transfer {
                 from: output_vault.to_account_info(),
                 to: ctx.accounts.user_put.to_account_info(),
@@ -171,5 +180,8 @@ pub struct Swap<'info> {
     #[account(mut)]
     pub user_put: InterfaceAccount<'info, TokenAccount>,
 
-    pub token_program: Program<'info, Token2022>,
+    pub token_program_a: Interface<'info, TokenInterface>,
+    pub token_program_b: Interface<'info, TokenInterface>,
+
+    pub token_program_2022: Program<'info, Token2022>,
 }

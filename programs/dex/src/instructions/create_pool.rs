@@ -4,7 +4,7 @@ use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_2022::Token2022;
-use anchor_spl::token_interface::{Mint, TokenAccount};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
 pub struct CreatePool<'info> {
@@ -16,6 +16,7 @@ pub struct CreatePool<'info> {
         payer = authority,
         mint::decimals = 6,
         mint::authority = pool,
+        mint::token_program = token_program_2022,
     )]
     pub lp_mint: InterfaceAccount<'info, Mint>,
 
@@ -28,6 +29,7 @@ pub struct CreatePool<'info> {
         payer = authority,
         associated_token::mint = token_a_mint,
         associated_token::authority = pool,
+        associated_token::token_program = token_program_a,
     )]
     pub vault_a: InterfaceAccount<'info, TokenAccount>,
 
@@ -36,6 +38,7 @@ pub struct CreatePool<'info> {
         payer = authority,
         associated_token::mint = token_b_mint,
         associated_token::authority = pool,
+     associated_token::token_program = token_program_b,
     )]
     pub vault_b: InterfaceAccount<'info, TokenAccount>,
 
@@ -48,7 +51,10 @@ pub struct CreatePool<'info> {
     )]
     pub pool: Account<'info, Pool>,
 
-    pub token_program: Program<'info, Token2022>,
+    pub token_program_a: Interface<'info, TokenInterface>,
+    pub token_program_b: Interface<'info, TokenInterface>,
+
+    pub token_program_2022: Program<'info, Token2022>,
 
     pub system_program: Program<'info, System>,
 
@@ -78,7 +84,6 @@ pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
     pool.paused = false;
     pool.bump = ctx.bumps.pool;
 
-    
     msg!(
         "Pool created successfully with authority: {},  Token A mint: {}, Token B mint: {}, LP mint: {}",
         pool.authority,pool.token_mint_a,pool.token_mint_b,pool.lp_mint

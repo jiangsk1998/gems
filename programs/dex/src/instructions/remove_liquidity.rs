@@ -3,8 +3,8 @@ use crate::error::DexError;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::token::accessor::amount;
-use anchor_spl::token_2022;
-use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
+use anchor_spl::token_interface::{Mint, Token2022, TokenAccount, TokenInterface};
+use anchor_spl::{token_2022, token_interface};
 
 #[derive(Accounts)]
 pub struct RemoveLiquidity<'info> {
@@ -49,7 +49,10 @@ pub struct RemoveLiquidity<'info> {
     )]
     pub user_lp_token: InterfaceAccount<'info, TokenAccount>,
 
-    pub token_program: Program<'info, Token2022>,
+    pub token_program_a: Interface<'info, TokenInterface>,
+    pub token_program_b: Interface<'info, TokenInterface>,
+
+    pub token_program_2022: Program<'info, Token2022>,
 }
 
 pub fn handler(
@@ -90,7 +93,7 @@ pub fn handler(
     //销毁用户的Token
     token_2022::burn(
         CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.token_program_2022.to_account_info(),
             token_2022::Burn {
                 mint: ctx.accounts.lp_mint.to_account_info(),
                 from: ctx.accounts.user_lp_token.to_account_info(),
@@ -100,9 +103,9 @@ pub fn handler(
         lp_amount,
     )?;
 
-    token_2022::transfer(
+    token_interface::transfer(
         CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.token_program_a.to_account_info(),
             token_2022::Transfer {
                 from: ctx.accounts.vault_a.to_account_info(),
                 to: ctx.accounts.user_token_a.to_account_info(),
@@ -118,9 +121,9 @@ pub fn handler(
         amount_a,
     )?;
 
-    token_2022::transfer(
+    token_interface::transfer(
         CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.token_program_b.to_account_info(),
             token_2022::Transfer {
                 from: ctx.accounts.vault_b.to_account_info(),
                 to: ctx.accounts.user_token_b.to_account_info(),

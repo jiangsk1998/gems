@@ -22,9 +22,9 @@ pub struct Pool {
 
     pub fee_denominator: u64, // 交易手续费分母
 
-    pub reserve_a: u64, // 代币A的储备量
+    pub reserve_a: u64, // 代币A的储备量 todo 添加同步指令
 
-    pub reserve_b: u64, // 代币B的储备量
+    pub reserve_b: u64, // 代币B的储备量 todo 添加同步指令
 
     pub lp_total_supply: u64, // LP 代币的总供应量（不含锁定）
 
