@@ -3,8 +3,8 @@ use crate::error::DexError;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::token_2022::Token2022;
-use anchor_spl::token_interface::{TokenAccount, TokenInterface};
-use anchor_spl::{token_2022, token_interface};
+use anchor_spl::token_interface;
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 pub fn handler(
     ctx: Context<Swap>,
@@ -70,58 +70,81 @@ pub fn handler(
     );
 
     //4.执行交换
-    token_interface::transfer(
+    let (in_decimals, out_decimals) = if a_to_b {
+        (ctx.accounts.mint_a.decimals, ctx.accounts.mint_b.decimals)
+    } else {
+        (ctx.accounts.mint_b.decimals, ctx.accounts.mint_a.decimals)
+    };
+
+    token_interface::transfer_checked(
         CpiContext::new(
-            // ctx.accounts.token_program.to_account_info(),
             if a_to_b {
                 ctx.accounts.token_program_a.to_account_info()
             } else {
                 ctx.accounts.token_program_b.to_account_info()
             },
-            token_2022::Transfer {
+            token_interface::TransferChecked {
                 from: ctx.accounts.user_input.to_account_info(),
+                mint: if a_to_b {
+                    ctx.accounts.mint_a.to_account_info()
+                } else {
+                    ctx.accounts.mint_b.to_account_info()
+                },
                 to: input_vault.to_account_info(),
                 authority: ctx.accounts.user.to_account_info(),
             },
         ),
         amount_in,
+        in_decimals,
     )?;
 
-    token_interface::transfer(
+    let pool_seeds: &[&[u8]] = &[
+        POOL_SEED,
+        pool.token_mint_a.as_ref(),
+        pool.token_mint_b.as_ref(),
+        &[pool.bump],
+    ];
+    token_interface::transfer_checked(
         CpiContext::new_with_signer(
+            // 输出方向与输入方向相反：a_to_b 时输出是 token_b，反之是 token_a
             if a_to_b {
-                ctx.accounts.token_program_a.to_account_info()
-            } else {
                 ctx.accounts.token_program_b.to_account_info()
+            } else {
+                ctx.accounts.token_program_a.to_account_info()
             },
-            token_2022::Transfer {
+            token_interface::TransferChecked {
                 from: output_vault.to_account_info(),
+                mint: if a_to_b {
+                    ctx.accounts.mint_b.to_account_info()
+                } else {
+                    ctx.accounts.mint_a.to_account_info()
+                },
                 to: ctx.accounts.user_put.to_account_info(),
                 authority: pool.to_account_info(),
             },
-            &[&[
-                POOL_SEED,
-                pool.token_mint_a.as_ref(),
-                pool.token_mint_b.as_ref(),
-                &[pool.bump],
-            ]],
+            &[pool_seeds],
         ),
         amount_out,
+        out_decimals,
     )?;
 
     //5.更新池子状态
     if a_to_b {
-        pool.reserve_a
-            .checked_sub(amount_in)
-            .ok_or(DexError::Overflow)?;
-        pool.reserve_b
-            .checked_add(amount_out)
-            .ok_or(DexError::Overflow)?;
-    } else {
-        pool.reserve_a
+        pool.reserve_a = pool
+            .reserve_a
             .checked_add(amount_in)
             .ok_or(DexError::Overflow)?;
-        pool.reserve_b
+        pool.reserve_b = pool
+            .reserve_b
+            .checked_sub(amount_out)
+            .ok_or(DexError::Overflow)?;
+    } else {
+        pool.reserve_b = pool
+            .reserve_b
+            .checked_add(amount_in)
+            .ok_or(DexError::Overflow)?;
+        pool.reserve_a = pool
+            .reserve_a
             .checked_sub(amount_out)
             .ok_or(DexError::Overflow)?;
     }
@@ -161,6 +184,14 @@ pub struct Swap<'info> {
         has_one = vault_b,
     )]
     pub pool: Box<Account<'info, Pool>>,
+
+    ///代币A的Mint
+    #[account(constraint = mint_a.key() == pool.token_mint_a @ DexError::InvalidMint)]
+    pub mint_a: Box<InterfaceAccount<'info, Mint>>,
+
+    ///代币B的Mint
+    #[account(constraint = mint_b.key() == pool.token_mint_b @ DexError::InvalidMint)]
+    pub mint_b: Box<InterfaceAccount<'info, Mint>>,
 
     ///代币A的金库
     #[account(mut)]

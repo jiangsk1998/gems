@@ -86,19 +86,26 @@ pub fn handler(
                 authority: ctx.accounts.user.to_account_info(),
             },
         ),
-        amount_a,
-        ctx.accounts.mint_a.decimals,
+        amount_b,
+        ctx.accounts.mint_b.decimals,
     )?;
 
     //cpi lp token 到用户
+    let pool_seeds: &[&[u8]] = &[
+        POOL_SEED,
+        pool.token_mint_a.as_ref(),
+        pool.token_mint_b.as_ref(),
+        &[pool.bump],
+    ];
     token_2022::mint_to_checked(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.token_program_2022.to_account_info(),
             token_2022::MintToChecked {
                 mint: ctx.accounts.lp_mint.to_account_info(),
                 to: ctx.accounts.user_lp_token.to_account_info(),
                 authority: pool.to_account_info(),
             },
+            &[pool_seeds],
         ),
         lp_to_mint,
         ctx.accounts.lp_mint.decimals,
@@ -209,10 +216,10 @@ pub fn integer_sqrt(n: u128) -> u64 {
         return n as u64;
     }
     let mut x = n;
-    let mut y = (x + 1) / 2;
+    let mut y = (x / 2).saturating_add(1);
     while y < x {
         x = y;
-        y = (x + n / x) / 2;
+        y = (x / 2).saturating_add((n / x) / 2);
     }
     x as u64
 }

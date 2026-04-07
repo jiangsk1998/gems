@@ -2,7 +2,6 @@ use crate::constant::POOL_SEED;
 use crate::error::DexError;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
-use anchor_spl::token::accessor::amount;
 use anchor_spl::token_interface::{Mint, Token2022, TokenAccount, TokenInterface};
 use anchor_spl::{token_2022, token_interface};
 
@@ -27,7 +26,14 @@ pub struct RemoveLiquidity<'info> {
     #[account(mut)]
     pub vault_b: InterfaceAccount<'info, TokenAccount>,
 
+    #[account(constraint = mint_a.key() == pool.token_mint_a @ DexError::InvalidMint)]
+    pub mint_a: Box<InterfaceAccount<'info, Mint>>,
+
+    #[account(constraint = mint_b.key() == pool.token_mint_b @ DexError::InvalidMint)]
+    pub mint_b: Box<InterfaceAccount<'info, Mint>>,
+
     ///LP Mint 销毁LP Token
+    #[account(mut)]
     pub lp_mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut,
@@ -90,6 +96,13 @@ pub fn handler(
     require!(amount_b >= min_b, DexError::InvalidTokenAmount);
     require!(amount_a > 0 && amount_b > 0, DexError::ZeroAmount);
 
+    let pool_seeds: &[&[u8]] = &[
+        POOL_SEED,
+        pool.token_mint_a.as_ref(),
+        pool.token_mint_b.as_ref(),
+        &[pool.bump],
+    ];
+
     //销毁用户的Token
     token_2022::burn(
         CpiContext::new(
@@ -103,40 +116,34 @@ pub fn handler(
         lp_amount,
     )?;
 
-    token_interface::transfer(
+    token_interface::transfer_checked(
         CpiContext::new_with_signer(
             ctx.accounts.token_program_a.to_account_info(),
-            token_2022::Transfer {
+            token_interface::TransferChecked {
                 from: ctx.accounts.vault_a.to_account_info(),
+                mint: ctx.accounts.mint_a.to_account_info(),
                 to: ctx.accounts.user_token_a.to_account_info(),
                 authority: pool.to_account_info(),
             },
-            &[&[
-                POOL_SEED,
-                pool.token_mint_a.as_ref(),
-                pool.token_mint_b.as_ref(),
-                &[pool.bump],
-            ]],
+            &[pool_seeds],
         ),
         amount_a,
+        ctx.accounts.mint_a.decimals,
     )?;
 
-    token_interface::transfer(
+    token_interface::transfer_checked(
         CpiContext::new_with_signer(
             ctx.accounts.token_program_b.to_account_info(),
-            token_2022::Transfer {
+            token_interface::TransferChecked {
                 from: ctx.accounts.vault_b.to_account_info(),
+                mint: ctx.accounts.mint_b.to_account_info(),
                 to: ctx.accounts.user_token_b.to_account_info(),
                 authority: pool.to_account_info(),
             },
-            &[&[
-                POOL_SEED,
-                pool.token_mint_a.as_ref(),
-                pool.token_mint_b.as_ref(),
-                &[pool.bump],
-            ]],
+            &[pool_seeds],
         ),
-        amount_a,
+        amount_b,
+        ctx.accounts.mint_b.decimals,
     )?;
 
     //更新pool状态

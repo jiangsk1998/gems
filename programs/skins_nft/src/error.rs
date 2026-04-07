@@ -36,4 +36,7 @@ pub enum SkinsNftError {
 
     #[msg("无效的冻结权限账户")]
     InvalidFreezeAuthority,
+
+    #[msg("数值溢出")]
+    Overflow,
 }
