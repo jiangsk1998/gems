@@ -43,4 +43,7 @@ pub enum DexError {
 
     #[msg("滑点超过预设的最大值，交易被拒绝")]
     SlippageExceeded,
+
+    #[msg("未经授权的操作")]
+    Unauthorized,
 }

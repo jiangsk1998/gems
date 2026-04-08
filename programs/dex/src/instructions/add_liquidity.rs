@@ -1,6 +1,7 @@
 use crate::constant::{MINIMUM_LIQUIDITY, POOL_SEED};
 
 use crate::error::DexError;
+use crate::instructions::AddLiquidityEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
@@ -132,6 +133,15 @@ pub fn handler(
         amount_b,
         lp_to_mint
     );
+
+    emit!(AddLiquidityEvent {
+        added_by: ctx.accounts.user.key(),
+        pool: pool.key(),
+        amount_a,
+        amount_b,
+        lp_amount: lp_to_mint,
+    });
+
     Ok(())
 }
 

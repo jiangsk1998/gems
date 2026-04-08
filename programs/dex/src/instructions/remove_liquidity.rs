@@ -1,5 +1,6 @@
 use crate::constant::POOL_SEED;
 use crate::error::DexError;
+use crate::instructions::RemoveLiquidityEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, Token2022, TokenAccount, TokenInterface};
@@ -13,7 +14,7 @@ pub struct RemoveLiquidity<'info> {
     #[account(mut,
                 seeds = [POOL_SEED, pool.token_mint_a.key().as_ref(), pool.token_mint_b.key().as_ref()],
     bump = pool.bump,
-    constraint = !pool.paused,
+    // constraint = !pool.paused, 暂停后允许取回LP
     has_one = vault_a,
     has_one = vault_b,
     has_one = lp_mint,
@@ -169,6 +170,14 @@ pub fn handler(
         amount_b,
         pool.token_mint_b
     );
+
+    emit!(RemoveLiquidityEvent {
+        removed_by: ctx.accounts.user.key(),
+        pool: pool.key(),
+        amount_a,
+        amount_b,
+        lp_amount,
+    });
 
     Ok(())
 }

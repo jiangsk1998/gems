@@ -1,5 +1,6 @@
 use crate::constant::POOL_SEED;
 use crate::error::DexError;
+use crate::instructions::SwapEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::token_2022::Token2022;
@@ -36,6 +37,12 @@ pub fn handler(
         DexError::InvalidMint
     );
 
+    // 防止自转（输入输出是同一个账户）
+    require!(
+        ctx.accounts.user_input.key() != ctx.accounts.user_put.key(),
+        DexError::InvalidMint
+    );
+
     //2.计算输出金额
 
     let fee_factor = pool
@@ -68,6 +75,7 @@ pub fn handler(
         amount_out >= min_amount_out && amount_out > 0,
         DexError::SlippageExceeded
     );
+    require!(reserve_out >= amount_out, DexError::Overflow);
 
     //4.执行交换
     let (in_decimals, out_decimals) = if a_to_b {
@@ -165,6 +173,23 @@ pub fn handler(
             pool.token_mint_a
         },
     );
+
+    emit!(SwapEvent {
+        swap_by: ctx.accounts.user.key(),
+        pool: pool.key(),
+        amount_in,
+        amount_out,
+        token_in: if a_to_b {
+            pool.token_mint_a
+        } else {
+            pool.token_mint_b
+        },
+        token_out: if a_to_b {
+            pool.token_mint_b
+        } else {
+            pool.token_mint_a
+        },
+    });
 
     Ok(())
 }
