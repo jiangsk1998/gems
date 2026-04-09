@@ -6,31 +6,32 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
+dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 faucet = "8pjYoQdRtEbGxddTSPfWAyQYcQhUUhizqxVjtojNxenN"
 skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 tangaga = "FZLKFcWiZbyyPqpyoG1uA1APveJC6Ex5e93wmaf63L9C"
-dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 
 [programs.localnet]
+dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 faucet = "8pjYoQdRtEbGxddTSPfWAyQYcQhUUhizqxVjtojNxenN"
 skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
+staking = "7uDSLVxJbjTNtnHDWFYt4kweCNLbNzVsfMcbdNhk9hiC"
 tangaga = "FZLKFcWiZbyyPqpyoG1uA1APveJC6Ex5e93wmaf63L9C"
-dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
+
 [programs.mainnet]
+dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 faucet = "8pjYoQdRtEbGxddTSPfWAyQYcQhUUhizqxVjtojNxenN"
 skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 tangaga = "FZLKFcWiZbyyPqpyoG1uA1APveJC6Ex5e93wmaf63L9C"
-dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 
 [programs.testnet]
+dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 faucet = "8pjYoQdRtEbGxddTSPfWAyQYcQhUUhizqxVjtojNxenN"
 skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 tangaga = "FZLKFcWiZbyyPqpyoG1uA1APveJC6Ex5e93wmaf63L9C"
-dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 
 [registry]
 url = "https://api.apr.dev"
-
 
 [provider]
 cluster = "localnet"
