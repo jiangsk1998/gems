@@ -45,6 +45,8 @@ pub fn handler(ctx: Context<Stake>, amount: u64) -> Result<()> {
     let user_stake = &mut ctx.accounts.user_stake;
     let clock = Clock::get()?;
 
+    pool.accrue_reward(clock.unix_timestamp)?;
+
     // 1.计算本次质押获得的份额数
     let shares_to_mint: u128 = if pool.total_shares == 0 {
         amount as u128
