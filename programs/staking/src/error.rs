@@ -26,4 +26,19 @@ pub enum StakingError {
 
     #[msg("没人质押时不能注入奖励")]
     NoStakersYet,
+
+    #[msg("交易金额必须大于零")]
+    ZeroAmount,
+
+    #[msg("质押池中没有足够的股份来完成操作")]
+    InsufficientShares,
+
+    #[msg("存在未完成的解质押，无法进行新的质押或解质押操作")]
+    ExistPendingUnstake,
+
+    #[msg("解质押操作已完成或不存在")]
+    NoPendingUnstake,
+
+    #[msg("冷却中")]
+    CooldownNotFinished,
 }

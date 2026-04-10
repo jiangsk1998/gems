@@ -9,9 +9,9 @@ pub struct UserStake {
 
     pub staked_amount: u64,
 
-    pub unstaked_requested_at: u64, //0 未请求解质押
+    pub unstaked_requested_at: i64, //0 未请求解质押
 
-    pub pending_unstake_shares: u64,
+    pub pending_unstake_shares: u128,
 
     pub bump: u8,
 }
