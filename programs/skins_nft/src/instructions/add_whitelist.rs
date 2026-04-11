@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{error::SkinsNftError, state::Config, WhitelistEntry};
+use crate::{error::SkinsNftError, event::WhitelistAddedEvent, state::Config, WhitelistEntry};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 
@@ -47,6 +47,11 @@ pub fn handler(ctx: Context<AddWhitelist>, args: AddWhitelistParams) -> Result<(
     whitelist_entry.remaining_mints = args.mint_amount;
     whitelist_entry.address = ctx.accounts.user.key();
     whitelist_entry.is_added = true;
+
+    emit!(WhitelistAddedEvent {
+        user: ctx.accounts.user.key(),
+        mint_amount: args.mint_amount,
+    });
 
     Ok(())
 }

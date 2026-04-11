@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, FreezeAccount, Mint, Token, TokenAccount};
 
-use crate::{error::SkinsNftError, Config};
+use crate::{error::SkinsNftError, event::NftFrozenEvent, Config};
 #[derive(Accounts)]
 pub struct FreezeNft<'info> {
     #[account(mut)]
@@ -53,5 +53,10 @@ pub fn handler(ctx: Context<FreezeNft>) -> Result<()> {
     token::freeze_account(cpi_ctx)?;
 
     msg!("账户已冻结");
+    emit!(NftFrozenEvent {
+        manager: ctx.accounts.manager.key(),
+        mint: ctx.accounts.mint.key(),
+        token_account: ctx.accounts.token_account.key(),
+    });
     Ok(())
 }

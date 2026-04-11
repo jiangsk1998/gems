@@ -4,6 +4,7 @@ use anchor_spl::{
 };
 
 use crate::error::CustomError;
+use crate::event::ApprovedEvent;
 
 #[derive(Accounts)]
 pub struct ApproveDelegate<'info> {
@@ -42,5 +43,11 @@ pub fn handle(ctx: Context<ApproveDelegate>, amount: u64) -> Result<()> {
         ctx.accounts.delegate.key(),
         amount
     );
+    emit!(ApprovedEvent {
+        owner: ctx.accounts.owner.key(),
+        delegate: ctx.accounts.delegate.key(),
+        token_account: ctx.accounts.token_account.key(),
+        amount,
+    });
     Ok(())
 }

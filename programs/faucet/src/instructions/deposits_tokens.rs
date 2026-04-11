@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{token_2022::{self, Token2022}, token_interface::TokenAccount};
-use crate::{Config, FaucetError, CONFIG_SEED};
+use crate::{Config, FaucetError, CONFIG_SEED, event::TokensDepositedEvent};
 
 pub fn handler(ctx: Context<DepositsTokens>, amount: u64) -> Result<()> {
     require!(amount > 0, FaucetError::InvalidDepositAmount);
@@ -21,6 +21,11 @@ pub fn handler(ctx: Context<DepositsTokens>, amount: u64) -> Result<()> {
     )?;
 
     msg!("成功存入 {} 代币到水龙头金库", amount);
+    emit!(TokensDepositedEvent {
+        admin: ctx.accounts.admin.key(),
+        vault: ctx.accounts.vault.key(),
+        amount,
+    });
 
     Ok(())
 }

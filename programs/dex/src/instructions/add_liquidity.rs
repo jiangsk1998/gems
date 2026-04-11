@@ -1,7 +1,7 @@
 use crate::constant::{MINIMUM_LIQUIDITY, POOL_SEED};
 
 use crate::error::DexError;
-use crate::instructions::AddLiquidityEvent;
+use crate::event::AddLiquidityEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;

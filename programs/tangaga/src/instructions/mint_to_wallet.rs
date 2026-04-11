@@ -6,6 +6,7 @@ use anchor_spl::{
 };
 
 use crate::error::CustomError;
+use crate::event::TokenMintedEvent;
 
 /// 2. mint_to_wallet — 铸造代币到指定钱包的 ATA
 pub fn mint_to_wallet(ctx: Context<MintToWallet>, amount: u64) -> Result<()> {
@@ -28,6 +29,12 @@ pub fn mint_to_wallet(ctx: Context<MintToWallet>, amount: u64) -> Result<()> {
         amount,
         ctx.accounts.destination_ata.key()
     );
+    emit!(TokenMintedEvent {
+        mint: ctx.accounts.mint.key(),
+        authority: ctx.accounts.authority.key(),
+        destination: ctx.accounts.destination_ata.key(),
+        amount,
+    });
     Ok(())
 }
 

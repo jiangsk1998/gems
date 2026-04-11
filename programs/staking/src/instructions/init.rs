@@ -3,6 +3,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
+use crate::event::InitPoolEvent;
+
 #[derive(Accounts)]
 pub struct Init<'info> {
     #[account(mut)]
@@ -54,6 +56,13 @@ pub fn handler(ctx: Context<Init>, reward_rate: u64) -> Result<()> {
         pool.stake_vault,
         pool.reward_rate
     );
+    emit!(InitPoolEvent {
+        admin: ctx.accounts.admin.key(),
+        pool: pool.key(),
+        mint: pool.mint,
+        stake_vault: pool.stake_vault,
+        reward_rate: pool.reward_rate,
+    });
 
     Ok(())
 }

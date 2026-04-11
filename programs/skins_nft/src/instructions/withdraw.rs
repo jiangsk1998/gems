@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::error::*;
+use crate::event::SolWithdrawEvent;
 
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
@@ -83,5 +84,10 @@ pub fn handler(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         amount,
         ctx.accounts.recipient.key()
     );
+    emit!(SolWithdrawEvent {
+        authority: ctx.accounts.authority.key(),
+        recipient: ctx.accounts.recipient.key(),
+        amount,
+    });
     Ok(())
 }

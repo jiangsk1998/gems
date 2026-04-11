@@ -4,6 +4,7 @@ use anchor_spl::{
 };
 
 use crate::error::CustomError;
+use crate::event::RevokedEvent;
 
 #[derive(Accounts)]
 pub struct RevokeDelegate<'info> {
@@ -32,5 +33,9 @@ pub fn handle(ctx: Context<RevokeDelegate>) -> Result<()> {
 
     token_2022::revoke(cpi_context)?;
     msg!("授权已取消");
+    emit!(RevokedEvent {
+        owner: ctx.accounts.owner.key(),
+        token_account: ctx.accounts.token_account.key(),
+    });
     Ok(())
 }

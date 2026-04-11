@@ -7,6 +7,7 @@ use anchor_spl::{
 };
 
 use crate::error::SkinsNftError;
+use crate::event::NftMintedEvent;
 
 pub fn handler_mint_nft_public(
     ctx: Context<MintNftPublic>,
@@ -137,6 +138,14 @@ pub fn do_mint(
         symbol,
         uri
     );
+    emit!(NftMintedEvent {
+        user: ctx.accounts.user.key(),
+        mint: ctx.accounts.mint.key(),
+        name,
+        symbol,
+        uri,
+        mint_type: "public".to_string(),
+    });
 
     Ok(())
 }

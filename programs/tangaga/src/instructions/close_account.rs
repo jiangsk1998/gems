@@ -4,6 +4,7 @@ use anchor_spl::{
 };
 
 use crate::error::CustomError;
+use crate::event::AccountClosedEvent;
 
 pub fn handle(ctx: Context<CloseAccount>) -> Result<()> {
     // 关闭账户前的检查
@@ -26,6 +27,10 @@ pub fn handle(ctx: Context<CloseAccount>) -> Result<()> {
             authority: ctx.accounts.owner.to_account_info(),
         },
     ))?;
+    emit!(AccountClosedEvent {
+        owner: ctx.accounts.owner.key(),
+        token_account: ctx.accounts.token_account.key(),
+    });
     Ok(())
 
     // 🗣️ 面试导向：框架的“黑盒”逻辑

@@ -8,6 +8,7 @@ use anchor_spl::{
 use mpl_token_metadata::instructions::DelegateStandardV1CpiBuilder;
 
 use crate::error::SkinsNftError;
+use crate::event::NftMintedEvent;
 
 pub fn handler_mint_nft_whitelist(
     ctx: Context<MintNftWhitelist>,
@@ -202,6 +203,14 @@ pub fn do_mint(
         symbol,
         uri
     );
+    emit!(NftMintedEvent {
+        user: ctx.accounts.user.key(),
+        mint: ctx.accounts.mint.key(),
+        name,
+        symbol,
+        uri,
+        mint_type: "whitelist".to_string(),
+    });
 
     Ok(())
 }

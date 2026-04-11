@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{Config, FaucetError, CONFIG_SEED};
+use crate::{Config, FaucetError, CONFIG_SEED, event::ConfigUpdatedEvent};
 
 /// 初始化水龙头
 pub fn handler(
@@ -25,6 +25,11 @@ pub fn handler(
         config.amount_per_claim,
         config.cooldown_seconds
     );
+    emit!(ConfigUpdatedEvent {
+        admin: ctx.accounts.admin.key(),
+        amount_per_claim: config.amount_per_claim,
+        cooldown_seconds: config.cooldown_seconds,
+    });
 
     Ok(())
 }

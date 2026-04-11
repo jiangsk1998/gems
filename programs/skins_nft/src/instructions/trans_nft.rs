@@ -5,6 +5,7 @@ use anchor_spl::{
 };
 
 use crate::accounts;
+use crate::event::NftTransferredEvent;
 
 #[derive(Accounts)]
 pub struct TransNFT<'info> {
@@ -64,6 +65,11 @@ pub fn handler(ctx: Context<TransNFT>) -> Result<()> {
     token::close_account(close_ctx)?;
 
     msg!("转账成功,ata已关闭");
+    emit!(NftTransferredEvent {
+        owner: ctx.accounts.owner.key(),
+        recipient: ctx.accounts.reviver.key(),
+        mint: ctx.accounts.mint.key(),
+    });
 
     Ok(())
 }

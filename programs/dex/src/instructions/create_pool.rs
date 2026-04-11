@@ -1,5 +1,6 @@
 use crate::constant::POOL_SEED;
 use crate::error::DexError;
+use crate::event::PoolCreatedEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
@@ -64,7 +65,7 @@ pub struct CreatePool<'info> {
 }
 
 pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
-    ///1. 检查两个代币的 Mint 地址不能相同
+    //1. 检查两个代币的 Mint 地址不能相同
     require!(
         ctx.accounts.token_b_mint.key() != ctx.accounts.token_a_mint.key(),
         DexError::IdenticalMints
@@ -88,6 +89,15 @@ pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
         "Pool created successfully with authority: {},  Token A mint: {}, Token B mint: {}, LP mint: {}",
         pool.authority,pool.token_mint_a,pool.token_mint_b,pool.lp_mint
     );
+    emit!(PoolCreatedEvent {
+        authority: pool.authority,
+        pool: pool.key(),
+        token_mint_a: pool.token_mint_a,
+        token_mint_b: pool.token_mint_b,
+        lp_mint: pool.lp_mint,
+        fee_numerator: pool.fee_numerator,
+        fee_denominator: pool.fee_denominator,
+    });
 
     Ok(())
 }

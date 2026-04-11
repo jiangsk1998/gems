@@ -6,6 +6,7 @@ use anchor_spl::{
 };
 
 use crate::error::CustomError;
+use crate::event::TokenTransferredEvent;
 
 /// 3. transfer_tokens — 从一个钱包转代币到另一个钱包
 pub fn transfer_tokens(ctx: Context<TransferTokens>, amount: u64) -> Result<()> {
@@ -39,6 +40,12 @@ pub fn transfer_tokens(ctx: Context<TransferTokens>, amount: u64) -> Result<()> 
         ctx.accounts.to_ata.key(),
         amount
     );
+    emit!(TokenTransferredEvent {
+        mint: ctx.accounts.mint.key(),
+        from: ctx.accounts.from_ata.key(),
+        to: ctx.accounts.to_ata.key(),
+        amount,
+    });
     Ok(())
 }
 

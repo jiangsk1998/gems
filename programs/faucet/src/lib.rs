@@ -12,6 +12,8 @@ pub use instructions::*;
 pub mod errors;
 pub use errors::*;
 
+pub mod event;
+pub use event::*;
 
 declare_id!("8pjYoQdRtEbGxddTSPfWAyQYcQhUUhizqxVjtojNxenN");
 

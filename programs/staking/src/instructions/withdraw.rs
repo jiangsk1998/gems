@@ -4,7 +4,6 @@ use crate::instructions::COOLDOWN_SECONDS;
 use crate::state::{StakePool, UserStake, SCALE};
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::metadata::mpl_token_metadata::types::TokenDelegateRole::Staking;
 use anchor_spl::token_interface;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 

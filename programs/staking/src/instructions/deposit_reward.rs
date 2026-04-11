@@ -3,6 +3,8 @@ use crate::state::StakePool;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
+use crate::event::DepositRewardEvent;
+
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct DepositReward<'info> {
@@ -70,5 +72,11 @@ pub fn handler(ctx: Context<DepositReward>, amount: u64) -> Result<()> {
         amount,
         pool.key()
     );
+    emit!(DepositRewardEvent {
+        admin: ctx.accounts.user.key(),
+        pool: pool.key(),
+        amount,
+        new_share_price: pool.share_price,
+    });
     Ok(())
 }

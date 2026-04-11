@@ -4,6 +4,8 @@ use anchor_spl::{
     token_interface::TokenAccount,
 };
 
+use crate::event::BurnedEvent;
+
 pub fn handle(ctx: Context<BurnToken>, amount: u64) -> Result<()> {
     let cpi_accounts = Burn {
         mint: ctx.accounts.mint.to_account_info(),
@@ -17,6 +19,12 @@ pub fn handle(ctx: Context<BurnToken>, amount: u64) -> Result<()> {
     token_2022::burn(cpi_ctx, amount)?;
 
     msg!("成功销毁 {} 单位", amount);
+    emit!(BurnedEvent {
+        owner: ctx.accounts.owner.key(),
+        mint: ctx.accounts.mint.key(),
+        from_ata: ctx.accounts.from_ata.key(),
+        amount,
+    });
     Ok(())
 }
 

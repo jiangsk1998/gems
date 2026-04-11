@@ -7,6 +7,9 @@ use instructions::*;
 pub mod state;
 pub use state::*;
 
+pub mod event;
+pub use event::*;
+
 declare_id!("BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy");
 
 #[program]

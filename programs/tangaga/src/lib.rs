@@ -1,4 +1,5 @@
 mod error;
+mod event;
 mod instructions;
 use anchor_lang::prelude::*;
 // use anchor_spl::token_2022::{self};

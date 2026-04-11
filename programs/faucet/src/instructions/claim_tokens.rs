@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token_2022::{self, Token2022}, token_interface::{Mint, TokenAccount}};
 
-use crate::{Config, ClaimRecord, FaucetError, CONFIG_SEED, CLAIM_RECORD_SEED};
+use crate::{Config, ClaimRecord, FaucetError, CONFIG_SEED, CLAIM_RECORD_SEED, event::TokensClaimedEvent};
 
 pub fn handler(ctx: Context<ClaimTokens>) -> Result<()> {
     let config = &mut ctx.accounts.config;
@@ -37,6 +37,13 @@ pub fn handler(ctx: Context<ClaimTokens>) -> Result<()> {
     config.claim_count = config.claim_count.checked_add(1).ok_or(FaucetError::MathOverflow)?;
 
     msg!("成功领取 {} 代币", config.amount_per_claim);
+    emit!(TokensClaimedEvent {
+        user: ctx.accounts.user.key(),
+        mint: ctx.accounts.mint.key(),
+        amount: config.amount_per_claim,
+        claim_count: claim_record.claim_count,
+        timestamp: clock.unix_timestamp,
+    });
 
     Ok(())
 }

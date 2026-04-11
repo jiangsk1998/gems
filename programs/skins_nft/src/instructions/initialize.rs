@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::error::SkinsNftError;
+use crate::event::InitializedEvent;
 use crate::state::Config;
 
 #[derive(Accounts)]
@@ -48,5 +49,12 @@ pub fn handler(ctx: Context<Initialize>, args: InitializeParams) -> Result<()> {
         "Contract initialized successfully with authority: {}",
         config.authority
     );
+    emit!(InitializedEvent {
+        authority: config.authority,
+        whitelist_enabled: config.whitelist_enabled,
+        mint_price: config.mint_price,
+        max_supply: config.max_supply,
+        max_mint_per_address: config.max_mint_per_address,
+    });
     Ok(())
 }

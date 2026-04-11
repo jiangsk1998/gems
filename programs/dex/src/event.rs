@@ -46,3 +46,15 @@ pub struct RemoveLiquidityEvent {
     pub amount_b: u64,
     pub lp_amount: u64,
 }
+
+// 流动性池创建事件
+#[event]
+pub struct PoolCreatedEvent {
+    pub authority: Pubkey,
+    pub pool: Pubkey,
+    pub token_mint_a: Pubkey,
+    pub token_mint_b: Pubkey,
+    pub lp_mint: Pubkey,
+    pub fee_numerator: u64,
+    pub fee_denominator: u64,
+}

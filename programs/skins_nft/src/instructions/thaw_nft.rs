@@ -5,7 +5,7 @@ use anchor_spl::{
     token::{self, FreezeAccount, Mint, ThawAccount, Token, TokenAccount},
 };
 
-use crate::{Config, error::SkinsNftError};
+use crate::{Config, error::SkinsNftError, event::NftThawedEvent};
 #[derive(Accounts)]
 pub struct ThawNft<'info> {
     /// 管理员账户
@@ -56,5 +56,10 @@ pub fn handler(ctx: Context<ThawNft>) -> Result<()> {
     token::thaw_account(cpi_ctx)?;
 
     msg!("账户已解冻");
+    emit!(NftThawedEvent {
+        manager: ctx.accounts.manager.key(),
+        mint: ctx.accounts.mint.key(),
+        token_account: ctx.accounts.token_account.key(),
+    });
     Ok(())
 }

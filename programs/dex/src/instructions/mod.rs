@@ -1,7 +1,6 @@
 pub mod add_liquidity;
 pub mod admin;
 pub mod create_pool;
-pub mod event;
 pub mod remove_liquidity;
 pub mod swap;
 
@@ -14,5 +13,3 @@ pub use swap::*;
 pub use remove_liquidity::*;
 
 pub use admin::*;
-
-pub use event::*;

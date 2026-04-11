@@ -1,6 +1,6 @@
 use crate::constant::POOL_SEED;
 use crate::error::DexError;
-use crate::instructions::SwapEvent;
+use crate::event::SwapEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::token_2022::Token2022;

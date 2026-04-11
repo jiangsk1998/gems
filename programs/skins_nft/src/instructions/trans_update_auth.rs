@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::metadata::Metadata;
 
+use crate::event::TransferUpdateAuthEvent;
+
 #[derive(Accounts)]
 pub struct TransUpdateAuth<'info> {
     pub current_authrity: Signer<'info>,
@@ -25,5 +27,10 @@ pub fn trans_update_auth(ctx: Context<TransUpdateAuth>) -> Result<()> {
     .invoke()?;
 
     msg!("更新权限已转移给: {}", ctx.accounts.new_auth.key());
+    emit!(TransferUpdateAuthEvent {
+        current_authority: ctx.accounts.current_authrity.key(),
+        new_authority: ctx.accounts.new_auth.key(),
+        metadata_account: ctx.accounts.metadata_account.key(),
+    });
     Ok(())
 }

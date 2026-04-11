@@ -1,5 +1,5 @@
 use crate::error::DexError;
-use crate::instructions::{PoolFeeUpdated, PoolPaused, PoolResume};
+use crate::event::{PoolFeeUpdated, PoolPaused, PoolResume};
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 

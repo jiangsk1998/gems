@@ -10,6 +10,7 @@ use anchor_spl::token_interface::MetadataPointerInitialize;
 use anchor_spl::token_interface::TokenMetadataInitialize;
 
 use crate::error::CustomError;
+use crate::event::TokenCreatedEvent;
 
 #[derive(Accounts)]
 #[instruction(name: String, symbol: String, uri: String, decimals: u8)]
@@ -127,12 +128,20 @@ pub fn create_token(
                 update_authority: ctx.accounts.manager.to_account_info(), // 更新元数据的权限
             },
         ),
-        name,
-        symbol,
-        uri,
+        name.clone(),
+        symbol.clone(),
+        uri.clone(),
     )?;
 
     // 记录成功日志
     msg!("Token-2022 Mint 创建成功: {}", ctx.accounts.mint.key());
+    emit!(TokenCreatedEvent {
+        mint: ctx.accounts.mint.key(),
+        authority: ctx.accounts.authority.key(),
+        name,
+        symbol,
+        uri,
+        decimals,
+    });
     Ok(())
 }

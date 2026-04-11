@@ -5,6 +5,7 @@ use anchor_spl::{
 };
 
 use crate::error::CustomError;
+use crate::event::DelegateTransferEvent;
 
 pub fn handle(ctx: Context<DelegateTransfer>, amount: u64, decimals: u8) -> Result<()> {
     require!(amount > 0, CustomError::ZeroAmount);
@@ -12,6 +13,11 @@ pub fn handle(ctx: Context<DelegateTransfer>, amount: u64, decimals: u8) -> Resu
         ctx.accounts.from_ata.amount >= amount,
         CustomError::InsufficientFunds
     );
+
+    // 在 ctx 被遮蔽前保存关键 Pubkey
+    let delegate_key = ctx.accounts.delegate.key();
+    let from_key = ctx.accounts.from_ata.key();
+    let to_key = ctx.accounts.to_ata.key();
 
     let ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
@@ -26,6 +32,12 @@ pub fn handle(ctx: Context<DelegateTransfer>, amount: u64, decimals: u8) -> Resu
     token_2022::transfer_checked(ctx, amount, decimals)?;
 
     msg!("委托转账成功: {} 单位", amount);
+    emit!(DelegateTransferEvent {
+        delegate: delegate_key,
+        from: from_key,
+        to: to_key,
+        amount,
+    });
 
     Ok(())
 }

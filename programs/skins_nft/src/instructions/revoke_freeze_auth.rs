@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, spl_token::instruction::AuthorityType, Mint, SetAuthority, Token};
 
+use crate::event::RevokeFreezeAuthEvent;
 use crate::Config;
 
 #[derive(Accounts)]
@@ -45,6 +46,10 @@ pub fn revoke_freeze_auth(ctx: Context<RevokeFreezeAuth>) -> Result<()> {
     )?;
 
     msg!("已撤销冻结权限");
+    emit!(RevokeFreezeAuthEvent {
+        manager: ctx.accounts.manager.key(),
+        mint: ctx.accounts.mint.key(),
+    });
 
     Ok(())
 }

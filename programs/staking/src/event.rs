@@ -24,3 +24,22 @@ pub struct WithdrawEvent {
     pub pool: Pubkey,
     pub token_amount: u64,
 }
+
+/// 质押池初始化事件
+#[event]
+pub struct InitPoolEvent {
+    pub admin: Pubkey,
+    pub pool: Pubkey,
+    pub mint: Pubkey,
+    pub stake_vault: Pubkey,
+    pub reward_rate: u64,
+}
+
+/// 管理员注入奖励事件
+#[event]
+pub struct DepositRewardEvent {
+    pub admin: Pubkey,
+    pub pool: Pubkey,
+    pub amount: u64,
+    pub new_share_price: u128,
+}

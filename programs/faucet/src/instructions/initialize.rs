@@ -5,7 +5,7 @@ use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022, token
 
 
 
-use crate::{CONFIG_SEED, Config, FaucetError};
+use crate::{CONFIG_SEED, Config, FaucetError, event::FaucetInitializedEvent};
 
 /// 初始化水龙头
 pub fn handler(
@@ -32,6 +32,13 @@ pub fn handler(
         amount_per_claim,
         cooldown_seconds
     );
+    emit!(FaucetInitializedEvent {
+        admin: ctx.accounts.admin.key(),
+        mint: ctx.accounts.mint.key(),
+        vault: ctx.accounts.vault.key(),
+        amount_per_claim,
+        cooldown_seconds,
+    });
     Ok(())
 }
 

@@ -2,8 +2,10 @@ use anchor_lang::prelude::*;
 
 pub mod constant;
 pub mod error;
+pub mod event;
 pub mod instructions;
-pub mod state; // 告诉编译器：去寻找 state 目录或 state.rs 文件
+pub mod state;
+// 告诉编译器：去寻找 state 目录或 state.rs 文件
 
 use instructions::*;
 

@@ -1,6 +1,6 @@
 use crate::constant::POOL_SEED;
 use crate::error::DexError;
-use crate::instructions::RemoveLiquidityEvent;
+use crate::event::RemoveLiquidityEvent;
 use crate::state::Pool;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, Token2022, TokenAccount, TokenInterface};
