@@ -2,9 +2,7 @@ use crate::error::StakingError;
 use crate::event::StakeEvent;
 use crate::state::{StakePool, UserStake, SCALE};
 use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
-use anchor_spl::token_interface;
-use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
+use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
 pub struct Stake<'info> {
@@ -25,6 +23,7 @@ pub struct Stake<'info> {
       mut,
       associated_token::mint = pool.mint,
       associated_token::authority = user,
+      associated_token::token_program = token_program,
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
@@ -54,7 +53,7 @@ pub fn handler(ctx: Context<Stake>, amount: u64) -> Result<()> {
         (amount as u128)
             .checked_mul(SCALE)
             .ok_or(StakingError::Overflow)?
-            .checked_div(pool.share_price as u128)
+            .checked_div(pool.share_price)
             .ok_or(StakingError::Overflow)?
     };
 
@@ -71,8 +70,8 @@ pub fn handler(ctx: Context<Stake>, amount: u64) -> Result<()> {
     pool.share_price = (pool.total_staked as u128)
         .checked_mul(SCALE)
         .ok_or(StakingError::Overflow)?
-        .checked_div(pool.total_shares as u128)
-        .ok_or(StakingError::Overflow)? as u128;
+        .checked_div(pool.total_shares)
+        .ok_or(StakingError::Overflow)?;
 
     pool.last_reward_time = clock.unix_timestamp;
 

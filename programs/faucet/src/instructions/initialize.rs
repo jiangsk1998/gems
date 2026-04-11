@@ -1,11 +1,11 @@
-
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022, token_interface::{Mint, TokenAccount}};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_2022::Token2022,
+    token_interface::{Mint, TokenAccount},
+};
 
-
-
-
-use crate::{CONFIG_SEED, Config, FaucetError, event::FaucetInitializedEvent};
+use crate::{event::FaucetInitializedEvent, Config, FaucetError, CONFIG_SEED};
 
 /// 初始化水龙头
 pub fn handler(

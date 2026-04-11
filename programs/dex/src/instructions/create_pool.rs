@@ -65,7 +65,7 @@ pub struct CreatePool<'info> {
 }
 
 pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
-    //1. 检查两个代币的 Mint 地址不能相同
+    // 1. 检查两个代币的 Mint 地址不能相同
     require!(
         ctx.accounts.token_b_mint.key() != ctx.accounts.token_a_mint.key(),
         DexError::IdenticalMints

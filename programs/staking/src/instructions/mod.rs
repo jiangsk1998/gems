@@ -1,3 +1,4 @@
+#![allow(ambiguous_glob_reexports)]
 pub mod deposit_reward;
 pub mod init;
 pub mod stake;

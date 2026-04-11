@@ -1,6 +1,5 @@
 use crate::error::StakingError;
 use anchor_lang::prelude::*;
-use std::future::pending;
 
 pub const SCALE: u128 = 1000000000;
 #[account]
@@ -35,7 +34,7 @@ impl StakePool {
         }
         (self.total_staked as u128)
             .saturating_mul(SCALE)
-            .saturating_div(self.total_shares as u128)
+            .saturating_div(self.total_shares)
     }
 
     //计算用户持有份额对应的当前价值

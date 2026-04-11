@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    token_2022::{self, Token2022}, token_interface::TokenAccount,
+    token_2022::{self, Token2022},
+    token_interface::TokenAccount,
 };
 
 use crate::error::CustomError;

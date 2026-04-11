@@ -11,7 +11,6 @@ declare_id!("7uDSLVxJbjTNtnHDWFYt4kweCNLbNzVsfMcbdNhk9hiC");
 #[program]
 pub mod staking {
     use super::*;
-    use crate::instruction::Unstake;
 
     pub fn init(ctx: Context<Init>, reward_rate: u64) -> Result<()> {
         init::handler(ctx, reward_rate)

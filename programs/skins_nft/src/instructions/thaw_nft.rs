@@ -1,11 +1,7 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    metadata::{self, Metadata},
-    token::{self, FreezeAccount, Mint, ThawAccount, Token, TokenAccount},
-};
+use anchor_spl::token::{self, Mint, ThawAccount, Token, TokenAccount};
 
-use crate::{Config, error::SkinsNftError, event::NftThawedEvent};
+use crate::{error::SkinsNftError, event::NftThawedEvent, Config};
 #[derive(Accounts)]
 pub struct ThawNft<'info> {
     /// 管理员账户
@@ -50,7 +46,7 @@ pub fn handler(ctx: Context<ThawNft>) -> Result<()> {
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         accounts,
-        signer_seeds
+        signer_seeds,
     );
 
     token::thaw_account(cpi_ctx)?;

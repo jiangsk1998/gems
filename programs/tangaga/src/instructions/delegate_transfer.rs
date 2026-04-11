@@ -1,7 +1,7 @@
 use anchor_lang::prelude::{program_option::COption, *};
 use anchor_spl::{
-    token::Mint,
-    token_2022::{self, Token2022}, token_interface::TokenAccount,
+    token_2022::{self, Token2022},
+    token_interface::TokenAccount,
 };
 
 use crate::error::CustomError;

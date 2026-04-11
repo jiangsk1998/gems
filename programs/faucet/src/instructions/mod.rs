@@ -1,5 +1,6 @@
-pub mod initialize ;
-pub use initialize ::*;
+#![allow(ambiguous_glob_reexports)]
+pub mod initialize;
+pub use initialize::*;
 
 pub mod deposits_tokens;
 pub use deposits_tokens::*;

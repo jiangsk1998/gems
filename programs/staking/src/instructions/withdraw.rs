@@ -1,7 +1,7 @@
 use crate::error::StakingError;
 use crate::event::WithdrawEvent;
 use crate::instructions::COOLDOWN_SECONDS;
-use crate::state::{StakePool, UserStake, SCALE};
+use crate::state::{StakePool, UserStake};
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface;

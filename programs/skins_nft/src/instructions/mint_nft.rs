@@ -66,7 +66,6 @@
 //         rent: ctx.accounts.rent.to_account_info(),
 //     };
 
-
 //     metadata::create_master_edition_v3(
 //         CpiContext::new(
 //             ctx.accounts.metadata_program.to_account_info(),
@@ -80,7 +79,6 @@
 //     //         current_authority: ctx.accounts.user.to_account_info(),
 //     //         account_or_mint: ctx.accounts.mint.to_account_info(),
 //     //     };
-    
 
 //     // // 4. 废除 Mint 账户的铸造权限，确保 NFT 不可再被铸造
 
@@ -110,7 +108,7 @@
 
 //     #[account(init,
 //         payer = user,
-//         mint::decimals = 0, //NFT 的小数位为0 
+//         mint::decimals = 0, //NFT 的小数位为0
 //         mint::authority = user, //铸造后废除
 //         mint::freeze_authority = user,
 //     )]

@@ -17,5 +17,5 @@ pub struct UserStake {
 }
 
 impl UserStake {
-    pub const LEN: usize = 8 + 32 + 32 + 16 + 8 + 8 + 8 + 1;
+    pub const LEN: usize = 8 + 32 + 32 + 16 + 8 + 8 + 16 + 1;
 }

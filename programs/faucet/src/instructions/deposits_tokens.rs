@@ -1,6 +1,10 @@
+#![allow(deprecated)]
+use crate::{event::TokensDepositedEvent, Config, FaucetError, CONFIG_SEED};
 use anchor_lang::prelude::*;
-use anchor_spl::{token_2022::{self, Token2022}, token_interface::TokenAccount};
-use crate::{Config, FaucetError, CONFIG_SEED, event::TokensDepositedEvent};
+use anchor_spl::{
+    token_2022::{self, Token2022},
+    token_interface::TokenAccount,
+};
 
 pub fn handler(ctx: Context<DepositsTokens>, amount: u64) -> Result<()> {
     require!(amount > 0, FaucetError::InvalidDepositAmount);
@@ -53,6 +57,6 @@ pub struct DepositsTokens<'info> {
     pub admin: Signer<'info>,
 
     pub token_program: Program<'info, Token2022>,
-    
+
     pub system_program: Program<'info, System>,
 }

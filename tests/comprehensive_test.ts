@@ -36,6 +36,7 @@ import { Tangaga } from "../target/types/tangaga";
 import { Faucet } from "../target/types/faucet";
 import { SkinsNft } from "../target/types/skins_nft";
 import { Dex } from "../target/types/dex";
+import { Staking } from "../target/types/staking";
 import { assert } from "chai";
 
 const METADATA_PROGRAM_ID = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
@@ -45,7 +46,7 @@ const METADATA_PROGRAM_ID = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
 // ─────────────────────────────────────────────────────────
 async function confirmTx(
   connection: anchor.web3.Connection,
-  sig: string,
+  sig: string
 ): Promise<void> {
   const bh = await connection.getLatestBlockhash();
   await connection.confirmTransaction({ signature: sig, ...bh }, "confirmed");
@@ -60,6 +61,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
   const faucetProgram = anchor.workspace.Faucet as Program<Faucet>;
   const skinsProgram = anchor.workspace.SkinsNft as Program<SkinsNft>;
   const dexProgram = anchor.workspace.Dex as Program<Dex>;
+  const stakingProgram = anchor.workspace.Staking as Program<Staking>;
   const connection = provider.connection;
 
   // ── 测试人员 ────────────────────────────────────────────
@@ -111,30 +113,30 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       console.log(
         `  ✔ 空投: ${label} (${kp.publicKey.toBase58().slice(0, 8)}…) ← ${
           amount / LAMPORTS_PER_SOL
-        } SOL`,
+        } SOL`
       );
     }
 
     // 2. 推导 Faucet PDA
     [faucetConfigPda] = PublicKey.findProgramAddressSync(
       [Buffer.from("config")],
-      faucetProgram.programId,
+      faucetProgram.programId
     );
     faucetVault = getAssociatedTokenAddressSync(
       tangagaMint.publicKey,
       faucetConfigPda,
       true, // allowOwnerOffCurve: PDA 作为 owner
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID
     );
 
     // 3. 推导 SkinsNFT PDA
     [skinsConfigPda] = PublicKey.findProgramAddressSync(
       [Buffer.from("config")],
-      skinsProgram.programId,
+      skinsProgram.programId
     );
     [skinsTreasuryPda] = PublicKey.findProgramAddressSync(
       [Buffer.from("treasury")],
-      skinsProgram.programId,
+      skinsProgram.programId
     );
 
     // 4. 计算 Tangaga ATA（Token-2022）
@@ -142,37 +144,37 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       tangagaMint.publicKey,
       admin.publicKey,
       false,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID
     );
     userATangagaAta = getAssociatedTokenAddressSync(
       tangagaMint.publicKey,
       userA.publicKey,
       false,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID
     );
     userBTangagaAta = getAssociatedTokenAddressSync(
       tangagaMint.publicKey,
       userB.publicKey,
       false,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID
     );
 
     // 5. 推导 DEX Pool PDA（需要 tangagaMint 已知）
     [poolPda] = PublicKey.findProgramAddressSync(
       [POOL_SEED, wsolMint.toBuffer(), tangagaMint.publicKey.toBuffer()],
-      dexProgram.programId,
+      dexProgram.programId
     );
     vaultA = getAssociatedTokenAddressSync(
       wsolMint,
       poolPda,
       true,
-      TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID
     );
     vaultB = getAssociatedTokenAddressSync(
       tangagaMint.publicKey,
       poolPda,
       true,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID
     );
 
     console.log("  前置条件准备完毕\n");
@@ -200,7 +202,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         mintInfo!.owner.toBase58(),
         TOKEN_2022_PROGRAM_ID.toBase58(),
-        "Mint owner 应是 Token-2022 程序",
+        "Mint owner 应是 Token-2022 程序"
       );
       console.log(`  ✔ 代币创建成功: ${tangagaMint.publicKey.toBase58()}`);
     });
@@ -233,7 +235,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(bal.value.amount),
         MINT_AMOUNT.toNumber(),
-        "userA 余额应为 100,000 TAGA",
+        "userA 余额应为 100,000 TAGA"
       );
     });
 
@@ -241,7 +243,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       const TRANSFER_AMOUNT = new anchor.BN(1_000 * 10 ** 6); // 1,000 TAGA
 
       const balBefore = await connection.getTokenAccountBalance(
-        userBTangagaAta,
+        userBTangagaAta
       );
 
       await tangagaProgram.methods
@@ -263,10 +265,10 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(balAfter.value.amount) - Number(balBefore.value.amount),
         TRANSFER_AMOUNT.toNumber(),
-        "userB 应增加 1,000 TAGA",
+        "userB 应增加 1,000 TAGA"
       );
       console.log(
-        `  ✔ 转账完成: userB 余额 = ${balAfter.value.uiAmountString} TAGA`,
+        `  ✔ 转账完成: userB 余额 = ${balAfter.value.uiAmountString} TAGA`
       );
     });
 
@@ -291,7 +293,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       const DELEGATE_AMOUNT = new anchor.BN(200 * 10 ** 6); // 200 TAGA
 
       const balBefore = await connection.getTokenAccountBalance(
-        userBTangagaAta,
+        userBTangagaAta
       );
 
       await tangagaProgram.methods
@@ -313,10 +315,10 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(balAfter.value.amount) - Number(balBefore.value.amount),
         DELEGATE_AMOUNT.toNumber(),
-        "userB 应增加 200 TAGA（代理转账）",
+        "userB 应增加 200 TAGA（代理转账）"
       );
       console.log(
-        `  ✔ 代理转账完成: userB 余额 = ${balAfter.value.uiAmountString} TAGA`,
+        `  ✔ 代理转账完成: userB 余额 = ${balAfter.value.uiAmountString} TAGA`
       );
     });
 
@@ -338,7 +340,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       const BURN_AMOUNT = new anchor.BN(500 * 10 ** 6); // 500 TAGA
 
       const balBefore = await connection.getTokenAccountBalance(
-        userATangagaAta,
+        userATangagaAta
       );
 
       await tangagaProgram.methods
@@ -356,10 +358,10 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(balBefore.value.amount) - Number(balAfter.value.amount),
         BURN_AMOUNT.toNumber(),
-        "userA 应减少 500 TAGA（销毁）",
+        "userA 应减少 500 TAGA（销毁）"
       );
       console.log(
-        `  ✔ 销毁完成: userA 余额 = ${balAfter.value.uiAmountString} TAGA`,
+        `  ✔ 销毁完成: userA 余额 = ${balAfter.value.uiAmountString} TAGA`
       );
     });
 
@@ -368,7 +370,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         tangagaMint.publicKey,
         delegateUser.publicKey,
         false,
-        TOKEN_2022_PROGRAM_ID,
+        TOKEN_2022_PROGRAM_ID
       );
 
       // 先铸造 1 个最小单位，再销毁，使余额归零，再关闭账户
@@ -439,12 +441,12 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         cfg.admin.toBase58(),
         admin.publicKey.toBase58(),
-        "admin 应匹配",
+        "admin 应匹配"
       );
       assert.equal(
         Number(cfg.amountPerClaim),
         AMOUNT_PER_CLAIM.toNumber(),
-        "每次领取量应匹配",
+        "每次领取量应匹配"
       );
       console.log("  ✔ 水龙头初始化成功");
     });
@@ -469,21 +471,21 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(vaultBal.value.amount),
         DEPOSIT.toNumber(),
-        "金库余额应等于存入量",
+        "金库余额应等于存入量"
       );
       console.log(
-        `  ✔ 存入完成: 金库余额 = ${vaultBal.value.uiAmountString} TAGA`,
+        `  ✔ 存入完成: 金库余额 = ${vaultBal.value.uiAmountString} TAGA`
       );
     });
 
     it("2.3 claim_tokens — userA 首次领取代币", async () => {
       const [claimRecordPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("claim_record"), userA.publicKey.toBuffer()],
-        faucetProgram.programId,
+        faucetProgram.programId
       );
 
       const balBefore = await connection.getTokenAccountBalance(
-        userATangagaAta,
+        userATangagaAta
       );
 
       await faucetProgram.methods
@@ -527,12 +529,12 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(cfg.amountPerClaim),
         NEW_AMOUNT.toNumber(),
-        "每次领取量应更新",
+        "每次领取量应更新"
       );
       assert.equal(
         Number(cfg.cooldownSeconds),
         NEW_COOLDOWN.toNumber(),
-        "冷却时间应更新",
+        "冷却时间应更新"
       );
       console.log("  ✔ 配置更新: amount=1,000 TAGA, cooldown=2s");
     });
@@ -541,7 +543,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       const WITHDRAW = new anchor.BN(10_000 * 10 ** 6); // 10,000 TAGA
 
       const balBefore = await connection.getTokenAccountBalance(
-        adminTangagaAta,
+        adminTangagaAta
       );
 
       await faucetProgram.methods
@@ -561,10 +563,10 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         Number(balAfter.value.amount) - Number(balBefore.value.amount),
         WITHDRAW.toNumber(),
-        "管理员应收到 10,000 TAGA",
+        "管理员应收到 10,000 TAGA"
       );
       console.log(
-        `  ✔ 提取完成: 管理员余额 = ${balAfter.value.uiAmountString} TAGA`,
+        `  ✔ 提取完成: 管理员余额 = ${balAfter.value.uiAmountString} TAGA`
       );
     });
   });
@@ -583,7 +585,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
           METADATA_PROGRAM_ID.toBuffer(),
           mint.toBuffer(),
         ],
-        METADATA_PROGRAM_ID,
+        METADATA_PROGRAM_ID
       )[0];
     }
 
@@ -595,7 +597,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
           mint.toBuffer(),
           Buffer.from("edition"),
         ],
-        METADATA_PROGRAM_ID,
+        METADATA_PROGRAM_ID
       )[0];
     }
 
@@ -624,13 +626,13 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
     it("3.2 mint_nft_public — userA 公共铸造 NFT", async () => {
       const [userMintRecord] = PublicKey.findProgramAddressSync(
         [Buffer.from("user_mint_record"), userA.publicKey.toBuffer()],
-        skinsProgram.programId,
+        skinsProgram.programId
       );
       const nftAta = getAssociatedTokenAddressSync(
         publicNftMint.publicKey,
         userA.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       await skinsProgram.methods
@@ -655,7 +657,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       const bal = await connection.getTokenAccountBalance(nftAta);
       assert.equal(bal.value.amount, "1", "userA 应持有 1 个 NFT");
       console.log(
-        `  ✔ 公共 NFT 铸造: ${publicNftMint.publicKey.toBase58().slice(0, 8)}…`,
+        `  ✔ 公共 NFT 铸造: ${publicNftMint.publicKey.toBase58().slice(0, 8)}…`
       );
     });
 
@@ -683,7 +685,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
     it("3.4 add_whitelist — 将 userB 加入白名单（可铸造 3 次）", async () => {
       const [whitelistEntry] = PublicKey.findProgramAddressSync(
         [Buffer.from("whitelist_entry"), userB.publicKey.toBuffer()],
-        skinsProgram.programId,
+        skinsProgram.programId
       );
 
       await skinsProgram.methods
@@ -699,7 +701,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         .rpc();
 
       const entry = await skinsProgram.account.whitelistEntry.fetch(
-        whitelistEntry,
+        whitelistEntry
       );
       assert.equal(Number(entry.remainingMints), 3);
       console.log("  ✔ userB 加入白名单，剩余铸造次数: 3");
@@ -708,24 +710,24 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
     it("3.5 mint_nft_whitelist — userB 白名单铸造 NFT", async () => {
       const [userMintRecord] = PublicKey.findProgramAddressSync(
         [Buffer.from("user_mint_record"), userB.publicKey.toBuffer()],
-        skinsProgram.programId,
+        skinsProgram.programId
       );
       const [whitelistEntry] = PublicKey.findProgramAddressSync(
         [Buffer.from("whitelist_entry"), userB.publicKey.toBuffer()],
-        skinsProgram.programId,
+        skinsProgram.programId
       );
       const nftAta = getAssociatedTokenAddressSync(
         whitelistNftMint.publicKey,
         userB.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       await skinsProgram.methods
         .mintNftWhitelist(
           "Skins WL #001",
           "SKINWL",
-          "https://example.com/nft/wl-001.json",
+          "https://example.com/nft/wl-001.json"
         )
         .accountsPartial({
           user: userB.publicKey,
@@ -749,7 +751,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       console.log(
         `  ✔ 白名单 NFT 铸造: ${whitelistNftMint.publicKey
           .toBase58()
-          .slice(0, 8)}…`,
+          .slice(0, 8)}…`
       );
     });
 
@@ -758,7 +760,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         whitelistNftMint.publicKey,
         userB.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       await skinsProgram.methods
@@ -781,7 +783,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         whitelistNftMint.publicKey,
         userB.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       await skinsProgram.methods
@@ -834,13 +836,13 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         whitelistNftMint.publicKey,
         userB.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
       const toAta = getAssociatedTokenAddressSync(
         whitelistNftMint.publicKey,
         userA.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       await skinsProgram.methods
@@ -901,7 +903,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         wsolMint,
         userA.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
       const wrapTx = new Transaction().add(
         createAssociatedTokenAccountInstruction(
@@ -909,14 +911,14 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
           userWsolAta,
           userA.publicKey,
           wsolMint,
-          TOKEN_PROGRAM_ID,
+          TOKEN_PROGRAM_ID
         ),
         SystemProgram.transfer({
           fromPubkey: userA.publicKey,
           toPubkey: userWsolAta,
           lamports: 10 * LAMPORTS_PER_SOL,
         }),
-        createSyncNativeInstruction(userWsolAta),
+        createSyncNativeInstruction(userWsolAta)
       );
       await provider.sendAndConfirm(wrapTx, [userA]);
       console.log("  userA 已包装 10 WSOL");
@@ -946,12 +948,12 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       assert.equal(
         pool.tokenMintA.toBase58(),
         wsolMint.toBase58(),
-        "Token A 应为 WSOL",
+        "Token A 应为 WSOL"
       );
       assert.equal(
         pool.tokenMintB.toBase58(),
         tangagaMint.publicKey.toBase58(),
-        "Token B 应为 Tangaga",
+        "Token B 应为 Tangaga"
       );
       console.log(`  ✔ 流动性池已创建: ${poolPda.toBase58().slice(0, 8)}…`);
     });
@@ -961,13 +963,13 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         wsolMint,
         userA.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
       const userLpAta = getAssociatedTokenAddressSync(
         lpMintKeypair.publicKey,
         userA.publicKey,
         false,
-        TOKEN_2022_PROGRAM_ID,
+        TOKEN_2022_PROGRAM_ID
       );
 
       const AMOUNT_A = new anchor.BN(2 * LAMPORTS_PER_SOL); // 2 WSOL
@@ -1005,7 +1007,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         wsolMint,
         userB.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       // 创建 userB 的 WSOL ATA（接收输出）
@@ -1016,8 +1018,8 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
             userBWsolAta,
             userB.publicKey,
             wsolMint,
-            TOKEN_PROGRAM_ID,
-          ),
+            TOKEN_PROGRAM_ID
+          )
         );
         await provider.sendAndConfirm(createAtaTx, [userB]);
       } catch (_) {
@@ -1049,7 +1051,7 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
       console.log(
         `  ✔ Tangaga→WSOL 成功，userB WSOL = ${
           Number(wsolBal.value.amount) / LAMPORTS_PER_SOL
-        } SOL`,
+        } SOL`
       );
     });
 
@@ -1058,12 +1060,12 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         wsolMint,
         userA.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
       const SWAP_AMOUNT = new anchor.BN(LAMPORTS_PER_SOL / 2); // 0.5 WSOL
 
       const tangagaBefore = await connection.getTokenAccountBalance(
-        userATangagaAta,
+        userATangagaAta
       );
 
       await dexProgram.methods
@@ -1085,14 +1087,14 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         .rpc();
 
       const tangagaAfter = await connection.getTokenAccountBalance(
-        userATangagaAta,
+        userATangagaAta
       );
       assert.isTrue(
         Number(tangagaAfter.value.amount) > Number(tangagaBefore.value.amount),
-        "userA Tangaga 余额应增加",
+        "userA Tangaga 余额应增加"
       );
       console.log(
-        `  ✔ WSOL→Tangaga 成功，userA Tangaga = ${tangagaAfter.value.uiAmountString} TAGA`,
+        `  ✔ WSOL→Tangaga 成功，userA Tangaga = ${tangagaAfter.value.uiAmountString} TAGA`
       );
     });
 
@@ -1101,13 +1103,13 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
         wsolMint,
         userA.publicKey,
         false,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
       const userLpAta = getAssociatedTokenAddressSync(
         lpMintKeypair.publicKey,
         userA.publicKey,
         false,
-        TOKEN_2022_PROGRAM_ID,
+        TOKEN_2022_PROGRAM_ID
       );
 
       // 查询当前持有的 LP 数量，全部移除
@@ -1117,14 +1119,14 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
 
       const wsolBefore = await connection.getTokenAccountBalance(userWsolAta);
       const tangagaBefore = await connection.getTokenAccountBalance(
-        userATangagaAta,
+        userATangagaAta
       );
 
       await dexProgram.methods
         .removeLiquidity(
           LP_AMOUNT,
           new anchor.BN(0), // min_a: 滑点保护设为 0（测试环境）
-          new anchor.BN(0), // min_b: 滑点保护设为 0（测试环境）
+          new anchor.BN(0) // min_b: 滑点保护设为 0（测试环境）
         )
         .accountsPartial({
           user: userA.publicKey,
@@ -1146,16 +1148,16 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
 
       const wsolAfter = await connection.getTokenAccountBalance(userWsolAta);
       const tangagaAfter2 = await connection.getTokenAccountBalance(
-        userATangagaAta,
+        userATangagaAta
       );
 
       assert.isTrue(
         Number(wsolAfter.value.amount) > Number(wsolBefore.value.amount),
-        "userA WSOL 余额应增加（取回 Token A）",
+        "userA WSOL 余额应增加（取回 Token A）"
       );
       assert.isTrue(
         Number(tangagaAfter2.value.amount) > Number(tangagaBefore.value.amount),
-        "userA Tangaga 余额应增加（取回 Token B）",
+        "userA Tangaga 余额应增加（取回 Token B）"
       );
 
       // 验证 LP 余额已清零
@@ -1171,8 +1173,109 @@ describe.only("全面综合测试 (Tangaga + Faucet + SkinsNFT + DEX)", () => {
             (Number(tangagaAfter2.value.amount) -
               Number(tangagaBefore.value.amount)) /
             10 ** 6
-          } TAGA`,
+          } TAGA`
       );
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // 五、Staking Program 测试
+  // ═══════════════════════════════════════════════════════════
+  describe("5. Staking Program", () => {
+    let poolPdaStaking: PublicKey;
+    let stakeVault: PublicKey;
+    let userStakePda: PublicKey;
+    const rewardRate = new anchor.BN(100);
+
+    before(async () => {
+      [poolPdaStaking] = PublicKey.findProgramAddressSync(
+        [Buffer.from("stake_pool"), tangagaMint.publicKey.toBuffer()],
+        stakingProgram.programId
+      );
+      stakeVault = getAssociatedTokenAddressSync(
+        tangagaMint.publicKey,
+        poolPdaStaking,
+        true,
+        TOKEN_2022_PROGRAM_ID
+      );
+      [userStakePda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("user_stake"),
+          poolPdaStaking.toBuffer(),
+          userA.publicKey.toBuffer(),
+        ],
+        stakingProgram.programId
+      );
+    });
+
+    it("5.1 init_pool — 初始化质押池", async () => {
+      await stakingProgram.methods
+        .init(rewardRate)
+        .accountsPartial({
+          admin: admin.publicKey,
+          pool: poolPdaStaking,
+          stakeVault: stakeVault,
+          mint: tangagaMint.publicKey,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        })
+        .signers([admin])
+        .rpc();
+      console.log("  ✔ Staking 初始化成功");
+    });
+
+    it("5.2 stake — userA 参与质押", async () => {
+      const stakeAmount = new anchor.BN(500 * 10 ** 6);
+      await stakingProgram.methods
+        .stake(stakeAmount)
+        .accountsPartial({
+          user: userA.publicKey,
+          userStake: userStakePda,
+          pool: poolPdaStaking,
+          userTokenAccount: userATangagaAta,
+          mint: tangagaMint.publicKey,
+          stakeVault: stakeVault,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
+        })
+        .signers([userA])
+        .rpc();
+      console.log("  ✔ userA 参与质押成功");
+    });
+
+    it("5.3 deposit_rewards — 管理员存入奖励", async () => {
+      const depositAmount = new anchor.BN(1000 * 10 ** 6);
+      await stakingProgram.methods
+        .deposit(depositAmount)
+        .accountsPartial({
+          user: admin.publicKey,
+          pool: poolPdaStaking,
+          mint: tangagaMint.publicKey,
+          stakeVault: stakeVault,
+          adminTokenAccount: adminTangagaAta,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
+        })
+        .signers([admin])
+        .rpc();
+      console.log("  ✔ 存入奖励成功");
+    });
+
+    it("5.4 unstake — userA 申请解除质押", async () => {
+      const userStakeInfo = await stakingProgram.account.userStake.fetch(
+        userStakePda
+      );
+      const sharesToUnstake = userStakeInfo.shares;
+      await stakingProgram.methods
+        .unstake(sharesToUnstake as any)
+        .accountsPartial({
+          pool: poolPdaStaking,
+          userStake: userStakePda,
+          user: userA.publicKey,
+        })
+        .signers([userA])
+        .rpc();
+      console.log("  ✔ userA 申请解除质押成功");
     });
   });
 });

@@ -1,10 +1,9 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{self, accessor::authority, CloseAccount, Mint, Token, TokenAccount, Transfer},
+    token::{self, CloseAccount, Mint, Token, TokenAccount, Transfer},
 };
 
-use crate::accounts;
 use crate::event::NftTransferredEvent;
 
 #[derive(Accounts)]

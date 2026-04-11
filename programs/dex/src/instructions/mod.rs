@@ -1,3 +1,4 @@
+#![allow(ambiguous_glob_reexports)]
 pub mod add_liquidity;
 pub mod admin;
 pub mod create_pool;

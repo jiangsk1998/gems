@@ -1,19 +1,14 @@
-import { Faucet } from "./../target/types/faucet";
-import { Tangaga } from "./../target/types/tangaga";
+import {Faucet} from "./../target/types/faucet";
+import {Tangaga} from "./../target/types/tangaga";
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { Keypair, PublicKey } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddress,
-  getAssociatedTokenAddressSync,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
-import { MPL_TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata";
+import {Program} from "@coral-xyz/anchor";
+import {PublicKey} from "@solana/web3.js";
+import {getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID,} from "@solana/spl-token";
 import bs58 from "bs58";
 import * as dotenv from "dotenv";
 
 // 使用已有的 skins_nft program idl
-import { SkinsNft } from "../target/types/skins_nft";
+import {SkinsNft} from "../target/types/skins_nft";
 
 // 加载 faucet idl 动态
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -21,87 +16,87 @@ const faucetIdl = require("../target/idl/faucet.json");
 
 dotenv.config(); // 必须在最前面
 
-describe.only("init all: token + skins_nft + faucet", () => {
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+describe("init all: token + skins_nft + faucet", () => {
+    const provider = anchor.AnchorProvider.env();
+    anchor.setProvider(provider);
 
-  const skinsProgram = anchor.workspace.skinsNft as Program<SkinsNft>;
-  const tangagaProgram = anchor.workspace.Tangaga as Program<Tangaga>;
-  const faucetProgram = anchor.workspace.Faucet as Program<Faucet>;
-  const connection = provider.connection;
+    const skinsProgram = anchor.workspace.skinsNft as Program<SkinsNft>;
+    const tangagaProgram = anchor.workspace.Tangaga as Program<Tangaga>;
+    const faucetProgram = anchor.workspace.Faucet as Program<Faucet>;
+    const connection = provider.connection;
 
-  // 2. 从环境变量读取并生成 Keypair
-  const adminPrivateKey = process.env.ADMIN_PRIVATE_KEY;
-  if (!adminPrivateKey) {
-    throw new Error("环境变量 ADMIN_PRIVATE_KEY 未设置！");
-  }
-
-  const adminKeypair = anchor.web3.Keypair.fromSecretKey(
-    bs58.decode(adminPrivateKey),
-  );
-
-  const default_wallet = provider.wallet as any;
-  console.log("默认钱包地址:", default_wallet.publicKey.toBase58());
-
-  const tangaga_mint = anchor.web3.Keypair.generate();
-
-  it("init all", async () => {
-    const airdropSig = await provider.connection.requestAirdrop(
-      adminKeypair.publicKey,
-      2 * anchor.web3.LAMPORTS_PER_SOL,
-    );
-    await provider.connection.confirmTransaction(airdropSig);
-
-    //1.创建代币并将铸币权移交给管理员
-
-    const tangaga_tx = await tangagaProgram.methods
-      .createToken("Tangaga", "$TAGA", "https://example.com/token.json", 6)
-      .accountsPartial({
-        mint: tangaga_mint.publicKey, // 由合约内创建，所以传默认值
-        authority: default_wallet.publicKey, // 由合约内创建，所以传默认值
-        manager: adminKeypair.publicKey, // 传管理员公钥
-      })
-      .signers([tangaga_mint, adminKeypair]) // mint 需要作为 signer，管理员也需要签名以接收权限
-      .rpc();
-    console.log("Create Token 交易:", tangaga_tx);
-    // 查询 mint 账户信息，验证 mint 存在且 owner 是 tangaga 程序
-    const mintInfo = await connection.getAccountInfo(tangaga_mint.publicKey);
-    console.log("查询 mint 账户信息:", mintInfo);
-    if (mintInfo) {
-      console.log("Mint 账户存在,owner:", mintInfo.owner.toBase58());
-    } else {
-      console.error("Mint 账户不存在");
+    // 2. 从环境变量读取并生成 Keypair
+    const adminPrivateKey = process.env.ADMIN_PRIVATE_KEY;
+    if (!adminPrivateKey) {
+        throw new Error("环境变量 ADMIN_PRIVATE_KEY 未设置！");
     }
 
-    const configAddress = (
-      await PublicKey.findProgramAddress(
-        [Buffer.from("config")],
-        faucetProgram.programId,
-      )
-    )[0];
-
-    const vaultAddress = getAssociatedTokenAddressSync(
-      tangaga_mint.publicKey,
-      configAddress,
-      true, // allowOwnerOffCurve: 因为 authority 是 PDA
-      TOKEN_2022_PROGRAM_ID, // 必须指定是 Token-2022
+    const adminKeypair = anchor.web3.Keypair.fromSecretKey(
+        bs58.decode(adminPrivateKey),
     );
 
-    //2.初始化 faucet 合约，设置管理员，预先铸币到 vault
-    const faucetInitializeTx = await faucetProgram.methods
-      .initialize(new anchor.BN(1000000), new anchor.BN(3600)) // amount_per_claim, cooldown_seconds
-      .accountsPartial({
-        config: configAddress,
-        mint: tangaga_mint.publicKey,
-        admin: adminKeypair.publicKey,
-        vault: vaultAddress,
-        // systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([adminKeypair])
-      .rpc();
+    const default_wallet = provider.wallet as any;
+    console.log("默认钱包地址:", default_wallet.publicKey.toBase58());
 
-    console.log("Faucet 初始化交易:", faucetInitializeTx);
-  });
+    const tangaga_mint = anchor.web3.Keypair.generate();
+
+    it("init all", async () => {
+        const airdropSig = await provider.connection.requestAirdrop(
+            adminKeypair.publicKey,
+            2 * anchor.web3.LAMPORTS_PER_SOL,
+        );
+        await provider.connection.confirmTransaction(airdropSig);
+
+        //1.创建代币并将铸币权移交给管理员
+
+        const tangaga_tx = await tangagaProgram.methods
+            .createToken("Tangaga", "$TAGA", "https://example.com/token.json", 6)
+            .accountsPartial({
+                mint: tangaga_mint.publicKey, // 由合约内创建，所以传默认值
+                authority: default_wallet.publicKey, // 由合约内创建，所以传默认值
+                manager: adminKeypair.publicKey, // 传管理员公钥
+            })
+            .signers([tangaga_mint, adminKeypair]) // mint 需要作为 signer，管理员也需要签名以接收权限
+            .rpc();
+        console.log("Create Token 交易:", tangaga_tx);
+        // 查询 mint 账户信息，验证 mint 存在且 owner 是 tangaga 程序
+        const mintInfo = await connection.getAccountInfo(tangaga_mint.publicKey);
+        console.log("查询 mint 账户信息:", mintInfo);
+        if (mintInfo) {
+            console.log("Mint 账户存在,owner:", mintInfo.owner.toBase58());
+        } else {
+            console.error("Mint 账户不存在");
+        }
+
+        const configAddress = (
+            await PublicKey.findProgramAddress(
+                [Buffer.from("config")],
+                faucetProgram.programId,
+            )
+        )[0];
+
+        const vaultAddress = getAssociatedTokenAddressSync(
+            tangaga_mint.publicKey,
+            configAddress,
+            true, // allowOwnerOffCurve: 因为 authority 是 PDA
+            TOKEN_2022_PROGRAM_ID, // 必须指定是 Token-2022
+        );
+
+        //2.初始化 faucet 合约，设置管理员，预先铸币到 vault
+        const faucetInitializeTx = await faucetProgram.methods
+            .initialize(new anchor.BN(1000000), new anchor.BN(3600)) // amount_per_claim, cooldown_seconds
+            .accountsPartial({
+                config: configAddress,
+                mint: tangaga_mint.publicKey,
+                admin: adminKeypair.publicKey,
+                vault: vaultAddress,
+                // systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .signers([adminKeypair])
+            .rpc();
+
+        console.log("Faucet 初始化交易:", faucetInitializeTx);
+    });
 });
 
 //3..初始化 skins_nft 合约，设置管理员，并将管理员加入白名单

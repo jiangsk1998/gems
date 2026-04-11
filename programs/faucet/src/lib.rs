@@ -22,7 +22,11 @@ pub mod faucet {
 
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, amount_per_claim: u64, cooldown_seconds: u64) -> Result<()> {
+    pub fn initialize(
+        ctx: Context<Initialize>,
+        amount_per_claim: u64,
+        cooldown_seconds: u64,
+    ) -> Result<()> {
         instructions::initialize::handler(ctx, amount_per_claim, cooldown_seconds)
     }
 
@@ -34,12 +38,14 @@ pub mod faucet {
         instructions::claim_tokens::handler(ctx)
     }
 
-    pub fn update_config(ctx: Context<UpdateConfig>, amount_per_claim: u64, cooldown_seconds: u64) -> Result<()> {
+    pub fn update_config(
+        ctx: Context<UpdateConfig>,
+        amount_per_claim: u64,
+        cooldown_seconds: u64,
+    ) -> Result<()> {
         instructions::update_config::handler(ctx, amount_per_claim, cooldown_seconds)
     }
     pub fn withdraw_tokens(ctx: Context<WithdrawTokens>, amount: u64) -> Result<()> {
         instructions::withdraw_tokens::handler(ctx, amount)
     }
 }
-
-

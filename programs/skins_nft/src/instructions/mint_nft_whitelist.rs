@@ -5,7 +5,7 @@ use anchor_spl::{
     metadata::{self, Metadata},
     token::{self, spl_token::instruction::AuthorityType, Mint, SetAuthority, Token, TokenAccount},
 };
-use mpl_token_metadata::instructions::DelegateStandardV1CpiBuilder;
+// use mpl_token_metadata::instructions::DelegateStandardV1CpiBuilder;
 
 use crate::error::SkinsNftError;
 use crate::event::NftMintedEvent;
@@ -45,7 +45,8 @@ pub fn handler_mint_nft_whitelist(
         .minted_count
         .checked_add(1)
         .ok_or(SkinsNftError::MathOverflow)?;
-    ctx.accounts.user_mint_record.minted_count = ctx.accounts
+    ctx.accounts.user_mint_record.minted_count = ctx
+        .accounts
         .user_mint_record
         .minted_count
         .checked_add(1)
@@ -53,7 +54,8 @@ pub fn handler_mint_nft_whitelist(
     ctx.accounts.user_mint_record.user = ctx.accounts.user.key();
     ctx.accounts.user_mint_record.last_mint_at = Clock::get()?.unix_timestamp;
 
-    ctx.accounts.whitelist_entry.remaining_mints = ctx.accounts
+    ctx.accounts.whitelist_entry.remaining_mints = ctx
+        .accounts
         .whitelist_entry
         .remaining_mints
         .checked_sub(1)
@@ -150,7 +152,7 @@ pub fn do_mint(
         Option::Some(ctx.accounts.config.key()),
     )?;
 
-        token::set_authority(
+    token::set_authority(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
             SetAuthority {

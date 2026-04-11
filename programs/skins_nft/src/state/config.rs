@@ -32,4 +32,3 @@ pub struct Config {
     /// 预留字段(用于未来升级)
     pub _reserved: [u8; 64],
 }
-

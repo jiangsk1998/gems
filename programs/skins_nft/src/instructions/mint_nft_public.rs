@@ -40,12 +40,14 @@ pub fn handler_mint_nft_public(
         config.mint_price,
     )?;
 
-    ctx.accounts.config.minted_count = ctx.accounts
+    ctx.accounts.config.minted_count = ctx
+        .accounts
         .config
         .minted_count
         .checked_add(1)
         .ok_or(SkinsNftError::MathOverflow)?;
-    ctx.accounts.user_mint_record.minted_count = ctx.accounts
+    ctx.accounts.user_mint_record.minted_count = ctx
+        .accounts
         .user_mint_record
         .minted_count
         .checked_add(1)
@@ -53,9 +55,7 @@ pub fn handler_mint_nft_public(
     ctx.accounts.user_mint_record.user = ctx.accounts.user.key();
     ctx.accounts.user_mint_record.last_mint_at = Clock::get()?.unix_timestamp;
 
-    do_mint(ctx, name, symbol, uri);
-
-    Ok(())
+    do_mint(ctx, name, symbol, uri)
 }
 
 /// 这个模块处理铸造 NFT 与交易给制定账户的逻辑
@@ -156,8 +156,8 @@ pub struct MintNftPublic<'info> {
     pub user: Signer<'info>,
 
     #[account(mut, seeds = [b"config"], bump,
-    constraint = config.mint_paused == false @ SkinsNftError::MintingPaused,
-    constraint = config.whitelist_enabled == false @ SkinsNftError::WhitelistEnabled,
+    constraint = !config.mint_paused @ SkinsNftError::MintingPaused,
+    constraint = !config.whitelist_enabled @ SkinsNftError::WhitelistEnabled,
 )]
     pub config: Account<'info, crate::state::Config>,
 

@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
 
-
-
 #[account]
 #[derive(InitSpace)]
 pub struct UserMintRecord {
@@ -21,5 +19,4 @@ impl UserMintRecord {
     pub fn seeds(user: &Pubkey) -> Vec<u8> {
         [b"user_mint_record", user.as_ref()].concat()
     }
-    
 }

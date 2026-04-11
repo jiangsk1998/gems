@@ -7,7 +7,6 @@ pub struct FreezeNft<'info> {
     #[account(mut)]
     pub manager: Signer<'info>,
 
-
     /// NFT的Mint账户
     #[account(
         constraint = mint.freeze_authority.is_some() && mint.freeze_authority.unwrap() == config.key() @ SkinsNftError::InvalidFreezeAuthority,

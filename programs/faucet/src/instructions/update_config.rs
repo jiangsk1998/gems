@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{Config, FaucetError, CONFIG_SEED, event::ConfigUpdatedEvent};
+use crate::{event::ConfigUpdatedEvent, Config, FaucetError, CONFIG_SEED};
 
 /// 初始化水龙头
 pub fn handler(

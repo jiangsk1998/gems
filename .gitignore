@@ -133,3 +133,6 @@ test-ledger/
 yarn.lock
 
 .env
+fix_comp.sh
+run_test.sh
+test_output.log
