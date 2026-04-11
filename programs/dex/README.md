@@ -27,6 +27,7 @@ flowchart TD
 - Rust 2021 + Anchor `0.32.1`
 - `anchor-spl`（`token` / `associated_token` / `token_2022`）
 - Solana Program PDA + CPI（SPL Token / Token-2022）
+- Python 客户端（`anchorpy` / `solana-py`，用于脚本化调用）
 
 ## 经济模型
 

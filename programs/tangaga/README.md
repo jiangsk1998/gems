@@ -40,6 +40,7 @@ flowchart LR
 - Rust 2021 + Anchor `0.32.1`
 - `anchor-spl` Token-2022 与扩展接口
 - SPL Token Metadata Interface（TLV 存储）
+- Python 客户端（`anchorpy` / `solana-py`，用于脚本化调用）
 
 ## 经济模型
 

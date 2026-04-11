@@ -32,6 +32,7 @@ flowchart TD
 - Rust 2021 + Anchor `0.32.1`
 - `anchor-spl`（`token_2022` / `token_2022_extensions`）
 - PDA + Share 份额模型 + CPI 转账
+- Python 客户端（`anchorpy` / `solana-py`，用于脚本化调用）
 
 ## 经济模型
 
