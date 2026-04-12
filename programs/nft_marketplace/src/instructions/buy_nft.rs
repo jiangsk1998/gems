@@ -3,7 +3,6 @@ use crate::event::NftBoughtEvent;
 use crate::state::listing::Listing;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::spl_token::instruction::TokenInstruction::TransferChecked;
 use anchor_spl::token::{self, CloseAccount, Mint, Token, TokenAccount, Transfer};
 use anchor_spl::token_2022;
 use anchor_spl::token_2022::Token2022;
