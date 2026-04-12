@@ -28,6 +28,23 @@ flowchart TD
     I --> J[withdraw]
 ```
 
+## 权限关系图
+
+```mermaid
+flowchart TD
+    A[NFT Mint] --> B[mint_authority<br/>是否还能增发]
+    A --> C[update_authority<br/>是否能改 metadata]
+    A --> D[freeze_authority<br/>是否能冻结/解冻账户]
+
+    C --> E[trans_update_auth<br/>转移 metadata 修改权]
+    D --> F[freeze_nft<br/>冻结 NFT 账户]
+    D --> G[thaw_nft<br/>解冻 NFT 账户]
+    D --> H[revoke_freeze_auth<br/>撤销冻结权限]
+
+    E --> I[新地址获得 metadata 管理权]
+    H --> J[冻结/解冻权限不可再用]
+```
+
 ## 技术栈
 
 - Rust 2021 + Anchor `0.32.1`

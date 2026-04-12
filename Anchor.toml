@@ -14,6 +14,7 @@ tangaga = "FZLKFcWiZbyyPqpyoG1uA1APveJC6Ex5e93wmaf63L9C"
 [programs.localnet]
 dex = "GnQC2PEtVFHj5tgFWek3BFLYqh9KZfpaPpjbC6JeZPcC"
 faucet = "8pjYoQdRtEbGxddTSPfWAyQYcQhUUhizqxVjtojNxenN"
+nft_marketplace = "FMk4EiXKP5e9DMyz7p4LPbPszTLNMPi7BF8EFJCSZM4z"
 skins_nft = "BHKrfqapEpWfgu9ammQ5LENgb6SjnA2TFU4FhGSCUzsy"
 staking = "7uDSLVxJbjTNtnHDWFYt4kweCNLbNzVsfMcbdNhk9hiC"
 tangaga = "FZLKFcWiZbyyPqpyoG1uA1APveJC6Ex5e93wmaf63L9C"
