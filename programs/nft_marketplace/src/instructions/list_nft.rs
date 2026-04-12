@@ -1,12 +1,11 @@
 use crate::errors::MarketplaceError;
+use crate::event::NftListedEvent;
 use crate::state::listing::Listing;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
-use crate::event::NftListedEvent;
 
 /// 挂单指令的账户上下文
 #[derive(Accounts)]
-#[instruction(price: u64)] // 指令参数，用于 PDA 推导（可选）
 pub struct ListNft<'info> {
     /// 卖家（签名者，会支付创建账户的 SOL 租金）
     #[account(mut)]
@@ -65,7 +64,6 @@ pub fn list_nft(ctx: Context<ListNft>, price: u64) -> Result<()> {
     listing.nft_mint = ctx.accounts.nft_mint.key(); // 记录 NFT Mint
     listing.price = price; // 记录价格
     listing.bump = ctx.bumps.listing; // 记录 PDA bump（签名时用）
-    listing.escrow_bump = ctx.bumps.escrow_nft_account; // 记录 escrow bump
 
     // 步骤 3：将 NFT 从卖家 ATA 转入 Escrow Account
     // 注意：这里用普通 CpiContext（由 seller 签名），不是 PDA 签名

@@ -16,13 +16,9 @@ pub struct Listing {
 
     /// PDA bump，签名时需要
     pub bump: u8, // 1 字节
-
-    /// 托管账户 bump（escrow token account）
-    pub escrow_bump: u8, // 1 字节
 }
 
 impl Listing {
-    /// 计算账户空间（INIT_SPACE 宏会自动，也可手动计算）
     /// 8 (discriminator) + 32 + 32 + 8 + 1 + 1 = 82 字节
     pub const LEN: usize = 8 + 32 + 32 + 8 + 1 + 1;
 }

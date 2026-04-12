@@ -1,8 +1,8 @@
 use crate::errors::MarketplaceError;
+use crate::event::NftDelistedEvent;
 use crate::state::listing::Listing;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, CloseAccount, Mint, Token, TokenAccount, Transfer};
-use crate::event::NftDelistedEvent;
 
 /// 下架指令的账户上下文
 #[derive(Accounts)]
@@ -36,7 +36,7 @@ pub struct DelistNft<'info> {
     #[account(
         mut,
         seeds = [b"escrow", nft_mint.key().as_ref()],
-        bump = listing.escrow_bump,
+        bump,
     )]
     pub escrow_nft_account: Account<'info, TokenAccount>,
 
